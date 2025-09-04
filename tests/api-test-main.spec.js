@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const csv = require('csv-parser');
 
+
 // Helper function to check if a product is related to the query
 function isProductRelated(product, query) {
   const searchTerm = query.toLowerCase();
@@ -79,6 +80,7 @@ function analyzeWordPositions(products, searchQuery) {
       stats.notFound++;
     }
   });
+  
   
   return stats;
 }
