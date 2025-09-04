@@ -15,6 +15,7 @@ function isProductRelated(product, query) {
   return fieldsToCheck.includes(searchTerm);
 }
 
+
 // Helper function to determine word position in text
 function getWordPosition(text, searchWord) {
   if (!text || !searchWord) return null;
