@@ -15,72 +15,72 @@ function isProductRelated(product, query) {
   return fieldsToCheck.includes(searchTerm);
 }
 
-// // Helper function to determine word position in text
-// function getWordPosition(text, searchWord) {
-//   if (!text || !searchWord) return null;
+// Helper function to determine word position in text
+function getWordPosition(text, searchWord) {
+  if (!text || !searchWord) return null;
   
-//   const lowerText = text.toLowerCase();
-//   const lowerWord = searchWord.toLowerCase();
-//   const wordIndex = lowerText.indexOf(lowerWord);
+  const lowerText = text.toLowerCase();
+  const lowerWord = searchWord.toLowerCase();
+  const wordIndex = lowerText.indexOf(lowerWord);
   
-//   if (wordIndex === -1) return null;
+  if (wordIndex === -1) return null;
   
-//   // Check if word appears at the beginning (first 20% of text)
-//   if (wordIndex === 0 || wordIndex / text.length < 0.2) {
-//     return 'beginning';
-//   }
+  // Check if word appears at the beginning (first 20% of text)
+  if (wordIndex === 0 || wordIndex / text.length < 0.2) {
+    return 'beginning';
+  }
   
-//   // Check if word appears at the end (last 20% of text)
-//   if ((wordIndex + searchWord.length) >= text.length || 
-//       wordIndex / text.length > 0.8) {
-//     return 'end';
-//   }
+  // Check if word appears at the end (last 20% of text)
+  if ((wordIndex + searchWord.length) >= text.length || 
+      wordIndex / text.length > 0.8) {
+    return 'end';
+  }
   
-//   // Otherwise it's in the middle
-//   return 'middle';
-// }
+  // Otherwise it's in the middle
+  return 'middle';
+}
 
-// // Function to analyze word positions in product descriptions
-// function analyzeWordPositions(products, searchQuery) {
-//   const stats = {
-//     beginning: 0,
-//     middle: 0,
-//     end: 0,
-//     notFound: 0,
-//     details: []
-//   };
+// Function to analyze word positions in product descriptions
+function analyzeWordPositions(products, searchQuery) {
+  const stats = {
+    beginning: 0,
+    middle: 0,
+    end: 0,
+    notFound: 0,
+    details: []
+  };
   
-//   const searchWords = searchQuery.toLowerCase().split(/\s+/);
+  const searchWords = searchQuery.toLowerCase().split(/\s+/);
   
-//   products.forEach((product, index) => {
-//     const description = product.description || product.name || '';
-//     let foundPosition = null;
+  products.forEach((product, index) => {
+    const description = product.description || product.name || '';
+    let foundPosition = null;
     
-//     // Check each word from the search query
-//     for (const word of searchWords) {
-//       const position = getWordPosition(description, word);
-//       if (position) {
-//         foundPosition = position;
-//         stats[position]++;
-//         stats.details.push({
-//           productIndex: index,
-//           productName: product.name,
-//           sku: product.sku,
-//           word: word,
-//           position: position,
-//           description: description.substring(0, 100) + (description.length > 100 ? '...' : '')
-//         });
-//         break; // Count only the first matching word
-//       }
-//     }
+    // Check each word from the search query
+    for (const word of searchWords) {
+      const position = getWordPosition(description, word);
+      if (position) {
+        foundPosition = position;
+        stats[position]++;
+        stats.details.push({
+          productIndex: index,
+          productName: product.name,
+          sku: product.sku,
+          word: word,
+          position: position,
+          description: description.substring(0, 100) + (description.length > 100 ? '...' : '')
+        });
+        break; // Count only the first matching word
+      }
+    }
     
-//     if (!foundPosition) {
-//       stats.notFound++;
-//     }
-//   });
+    if (!foundPosition) {
+      stats.notFound++;
+    }
+  });
   
-//   return stats;
-// }
+  return stats;
+}
 
 // Function to find actual positions of all expected products
 function findAllProductPositions(expectedProducts, actualProducts) {
@@ -287,7 +287,6 @@ test.describe('API Testing - Complete Validation Suite', () => {
           params: {
             siteId: 'os7898',
             q: testCase.query,
-            resultsPerPage: '48',
             use_cache: 'false'
           },
           timeout: 30000
@@ -302,16 +301,6 @@ test.describe('API Testing - Complete Validation Suite', () => {
         const responseData = await response.json();
         result.totalResults = responseData.pagination?.totalResults || 0;
         result.productsOnPage = responseData.results?.length || 0;
-        
-        // Log pagination info to understand API limits
-        if (responseData.pagination) {
-          console.log(`\n📊 Pagination Info for "${testCase.query}":`);
-          console.log(`   Total Results: ${responseData.pagination.totalResults || 'N/A'}`);
-          console.log(`   Current Page: ${responseData.pagination.currentPage || 'N/A'}`);
-          console.log(`   Per Page: ${responseData.pagination.perPage || 'N/A'}`);
-          console.log(`   Total Pages: ${responseData.pagination.totalPages || 'N/A'}`);
-          console.log(`   Products Returned: ${responseData.results?.length || 0}`);
-        }
         
         if (responseData.results && responseData.results.length > 0) {
           const products = responseData.results;

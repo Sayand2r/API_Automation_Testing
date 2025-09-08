@@ -1,25 +1,813 @@
 ﻿query,name,sku,position
-Depth Micrometer,Starrett PT99308 | -150mm Depth Micrometer Rod for 446M Depth Micrometers,30024667,1
-,"Starrett PT99115 | 0""-1"" Depth Micrometer Rod for 449 Depth Micrometers",30024380,2
-,"Starrett PT99116 | 1""-2"" Depth Micrometer Rod for 449 Depth Micrometers",30024381,3
-,"Starrett PT99117 | 2""-3"" Depth Micrometer Rod for 449 Depth Micrometers",30024382,4
-,"Starrett PT99118 | 3""-4"" Depth Micrometer Rod for 449 Depth Micrometers",30024383,5
-,"Starrett PT99119 | 4""-5"" Depth Micrometer Rod for 449 Depth Micrometers",30024384,6
-,"Starrett PT99333 | 2""-3"" Depth Micrometer Rod for 440 Depth Micrometers",30024400,7
-,Starrett PT99143 | 0mm-25mm Depth Micrometer Rod for 749M Depth Micrometers,30024386,8
-,Starrett PT99183 | 25mm-50mm Depth Micrometer Rod for 749M Depth Micrometers,30024387,9
-,Starrett PT99190 | 50mm-75mm Depth Micrometer Rod for 749M Depth Micrometers,30024388,10
-,Starrett PT99266 | 75mm-100mm Depth Micrometer Rod for 749M Depth Micrometers,30024389,11
-,Starrett PT99267 | 100mm-125mm Depth Micrometer Rod for 749M Depth Micrometers,30024390,12
-,Starrett PT99268 | 125mm-150mm Depth Micrometer Rod for 749M Depth Micrometers,30024391,13
-,"Starrett PT99331 | 0""-1"" Depth Micrometer Rod for 440 Depth Micrometers",30024398,14
-,"Starrett PT99332 | 1""-2"" Depth Micrometer Rod for 440 Depth Micrometers",30024399,15
-,"Starrett PT99120 | 5""-6"" Depth Micrometer Rod for 449 Depth Micrometers",30024385,16
-,"Starrett PT99334 | 3""-4"" Depth Micrometer Rod for 440 Depth Micrometers",30024401,17
-,"Starrett PT99335 | 4""-5"" Depth Micrometer Rod for 440 Depth Micrometers",30024402,18
-,"Starrett PT99336 | 5""-6"" Depth Micrometer Rod for 440 Depth Micrometers",30024403,19
-,"Starrett PT99357 | 6""-7"" Depth Micrometer Rod for 440 Depth Micrometers",30024424,20
-,"Starrett PT99338 | 7""-8"" Depth Micrometer Rod for 440 Depth Micrometers",30024405,21
-,"Starrett PT99339 | 8""-9"" Depth Micrometer Rod for 440 Depth Micrometers",30024406,22
-,Starrett PT99361 | 0mm-25mm Depth Micrometer Rod for 440M Depth Micrometers,30024419,23
-,Starrett PT99362 | 25mm-50mm Depth Micrometer Rod for 440M Depth Micrometers,30024420,24
+carbide tipped,"Jergens 23702 | 1/2"" Round Carbide Tipped Replaceable Gripper",50029497,1
+carbide tipped,"Jergens 23703 | 1/2"" Round Carbide Tipped Replaceable Gripper",50029498,2
+carbide tipped,"Jergens 23704 | 5/8"" Round Carbide Tipped Replaceable Gripper",50029499,3
+carbide tipped,"Jergens 23705 | 3/4"" Round Carbide Tipped Replaceable Gripper",50029500,4
+carbide tipped,"Jergens 23706 | 1/2"" Square Carbide Tipped Replaceable Gripper",50029501,5
+carbide tipped,"Jergens 23707 | 1/2"" Round Carbide Tipped Replaceable Gripper",50029502,6
+carbide tipped,"Jergens 23708 | 3/8"" Round Carbide Tipped Replaceable Gripper",50029503,7
+carbide tipped,"Carr Lane CL-8-RGT | #10-32 Thread x 1/2"" Diameter Carbide Tipped Round Gripper",50018259,8
+carbide tipped,"Scientific Cutting Tools 6149-M20X1.5-F33 | 0.750"" Shank x 3.750"" OAL Uncoated Carbide Tipped Porting Tool",18021133,9
+carbide tipped,"Scientific Cutting Tools 6149-M30X2.0-F44 | 1.000"" Shank x 4.250"" OAL Uncoated Carbide Tipped Porting Tool",18021128,10
+carbide tipped,"Scientific Cutting Tools 6149-M30X2.0-ID | 1.000"" Shank x 4.250"" OAL Uncoated Carbide Tipped Porting Tool",18021242,11
+carbide tipped,"Scientific Cutting Tools T-21A-FINISH-X6 | 0.750"" Shank x 6.000"" OAL Uncoated Carbide Tipped Cavity Tool",25362799,12
+carbide tipped,"Scientific Cutting Tools T-19A-ROUGH-X8 | 1.000"" Shank x 7.375"" OAL Uncoated Carbide Tipped Cavity Tool",25362804,13
+carbide tipped,"Scientific Cutting Tools C12-2-FINISH-X8 | 0.750"" Shank x 5.250"" OAL Uncoated Carbide Tipped Cavity Tool",10243811,14
+carbide tipped,"Scientific Cutting Tools C16-2-FINISH-X8 | 0.750"" Shank x 5.500"" OAL Uncoated Carbide Tipped Cavity Tool",10243820,15
+carbide tipped,"Scientific Cutting Tools C16-3-FINISH-X8 | 0.750"" Shank x 6.250"" OAL Uncoated Carbide Tipped Cavity Tool",10243823,16
+carbide tipped,"Scientific Cutting Tools C12-4-FINISH-X8 | 0.750"" Shank x 6.500"" OAL Uncoated Carbide Tipped Cavity Tool",10243817,17
+carbide tipped,"Scientific Cutting Tools C12-3-FINISH-X8 | 0.750"" Shank x 5.750"" OAL Uncoated Carbide Tipped Cavity Tool",10243814,18
+carbide tipped,"Scientific Cutting Tools C10-4-FINISH-X6 | 0.750"" Shank x 5.500"" OAL Uncoated Carbide Tipped Cavity Tool",10243825,19
+carbide tipped,"Scientific Cutting Tools C08-2-FINISH-X6 | 0.750"" Shank x 4.000"" OAL Uncoated Carbide Tipped Cavity Tool",10243805,20
+carbide tipped,"Scientific Cutting Tools C08-4-FINISH-X6 | 0.750"" Shank x 5.500"" OAL Uncoated Carbide Tipped Cavity Tool",10243809,21
+carbide tipped,"Scientific Cutting Tools C-8-4-ROUGH-X6 | 0.750"" Shank x 5.500"" OAL Uncoated Carbide Tipped Cavity Tool",10243908,22
+carbide tipped,"Scientific Cutting Tools C-8-2-ROUGH-X6 | 0.750"" Shank x 4.000"" OAL Uncoated Carbide Tipped Cavity Tool",10243906,23
+carbide tipped,"Scientific Cutting Tools C08-3-FINISH-X6 | 0.750"" Shank x 5.000"" OAL Uncoated Carbide Tipped Cavity Tool",10243807,24
+,,,
+center drill,Magafor 80091003125 | 60 Degree Included Angle M42/Red'X 0910 Center Drill,25257181,1
+center drill,Magafor 80091003151 | 60 Degree Included Angle M42/Red'X 0910 Center Drill,25257182,2
+center drill,Magafor 80091004160 | 60 Degree Included Angle M42/Red'X 0910 Center Drill,25257183,3
+center drill,Magafor 80091005200 | 60 Degree Included Angle M42/Red'X 0910 Center Drill,25257184,4
+center drill,Magafor 80091006325 | 60 Degree Included Angle M42/Red'X 0910 Center Drill,25257185,5
+center drill,Magafor 80091008315 | 60 Degree Included Angle M42/Red'X 0910 Center Drill,25257186,6
+center drill,Magafor 80091010400 | 60 Degree Included Angle M42/Red'X 0910 Center Drill,25257187,7
+center drill,Magafor 80091012550 | 60 Degree Included Angle M42/Red'X 0910 Center Drill,25257188,8
+center drill,Magafor 888100H031505 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259868,9
+center drill,Magafor 888100H031508 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259869,10
+center drill,Magafor 888100H03151 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259870,11
+center drill,Magafor 888100H0315125 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259871,12
+center drill,Magafor 888100H0416 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259873,13
+center drill,Magafor 888100H0515 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259874,14
+center drill,Magafor 888100H0520 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259875,15
+center drill,Magafor 888100H0620 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259876,16
+center drill,Magafor 888100H06325 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259877,17
+center drill,Magafor 888100H0825 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259878,18
+center drill,Magafor 888100H0830 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259879,19
+center drill,Magafor 888100H08315 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259880,20
+center drill,Magafor 888100H1030 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259881,21
+center drill,Magafor 888100H1040 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259882,22
+center drill,Magafor 888100H1250 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259883,23
+center drill,Magafor 888100H1255 | 60 Degree Included Angle K15/Hard'X 8100-H Center Drill,25259884,24
+,,,
+chamfer mill,"Fullerton Tool 34355 | 45-degree 5/8"" x 3-1/2"" Solid Carbide FC18 Chamfer Mill",10002213,1
+chamfer mill,Fullerton Tool 92855 | 90-degree 12mm x 76mm Solid Carbide TiAlN Chamfer Mill,10002216,2
+chamfer mill,Fullerton Tool 92854 | 90-degree 10mm x 64mm Solid Carbide TiAlN Chamfer Mill,10002217,3
+chamfer mill,Fullerton Tool 92852 | 90-degree 6mm x 64mm Solid Carbide TiAlN Chamfer Mill,10002218,4
+chamfer mill,Fullerton Tool 92851 | 90-degree 4mm x 50mm Solid Carbide TiAlN Chamfer Mill,10002219,5
+chamfer mill,Fullerton Tool 92850 | 90-degree 3mm x 38mm Solid Carbide TiAlN Chamfer Mill,10002220,6
+chamfer mill,Fullerton Tool 92527 | 90-degree 12mm x 76mm Solid Carbide Uncoated Chamfer Mill,10002221,7
+chamfer mill,Fullerton Tool 92526 | 90-degree 10mm x 64mm Solid Carbide Uncoated Chamfer Mill,10002222,8
+chamfer mill,Fullerton Tool 92525 | 90-degree 8mm x 64mm Solid Carbide Uncoated Chamfer Mill,10002223,9
+chamfer mill,Fullerton Tool 92524 | 90-degree 6mm x 64mm Solid Carbide Uncoated Chamfer Mill,10002224,10
+chamfer mill,Fullerton Tool 92523 | 90-degree 4mm x 50mm Solid Carbide Uncoated Chamfer Mill,10002225,11
+chamfer mill,Fullerton Tool 92522 | 90-degree 3mm x 38mm Solid Carbide Uncoated Chamfer Mill,10002226,12
+chamfer mill,"Keo 919-000-031 | 0.500"" Diameter x 3.000"" OAL AlTiN Coated Carbide Chamfer Mill",25335087,13
+chamfer mill,"Keo 919-000-034 | 0.500"" Diameter x 3.000"" OAL TiN Coated Carbide Chamfer Mill",25335088,14
+chamfer mill,"Fullerton Tool 34315 | 45-degree 1"" x 5"" Solid Carbide FC18 Chamfer Mill",10002119,15
+chamfer mill,"Fullerton Tool 36151 | 90-degree 1/2"" x 3"" Solid Carbide Uncoated Chamfer Mill",10002123,16
+chamfer mill,"Fullerton Tool 36150 | 90-degree 1/2"" x 3"" Solid Carbide Uncoated Chamfer Mill",10002124,17
+chamfer mill,"Fullerton Tool 36145 | 60-degree 1/2"" x 3"" Solid Carbide Uncoated Chamfer Mill",10002125,18
+chamfer mill,"Fullerton Tool 36144 | 60-degree 1/2"" x 3"" Solid Carbide Uncoated Chamfer Mill",10002126,19
+chamfer mill,"Fullerton Tool 36103 | 120-degree 1/2"" x 3"" Solid Carbide TiAlN Chamfer Mill",10002127,20
+chamfer mill,"Fullerton Tool 36099 | 60-degree 1/2"" x 3"" Solid Carbide TiAlN Chamfer Mill",10002128,21
+chamfer mill,"Fullerton Tool 36096 | 90-degree 1/2"" x 3"" Solid Carbide TiAlN Chamfer Mill",10002129,22
+chamfer mill,"Fullerton Tool 36093 | 90-degree 1/2"" x 3"" Solid Carbide TiAlN Chamfer Mill",10002130,23
+chamfer mill,"Fullerton Tool 36092 | 90-degree 1/2"" x 3"" Solid Carbide TiAlN Chamfer Mill",10002131,24
+,,,
+collet,Haimer 81.110.1.0 | 1.00mm Collet Size ER11 ER Collet,55018068,1
+collet,Haimer 81.110.1.5 | 1.50mm Collet Size ER11 ER Collet,55018069,2
+collet,Haimer 81.110.2.0 | 2.00mm Collet Size ER11 ER Collet,55018070,3
+collet,Haimer 81.110.2.5 | 2.50mm Collet Size ER11 ER Collet,55018071,4
+collet,Haimer 81.110.3.0 | 3.00mm Collet Size ER11 ER Collet,55018072,5
+collet,Haimer 81.110.3.5 | 3.50mm Collet Size ER11 ER Collet,55018073,6
+collet,Haimer 81.110.4.0 | 4.00mm Collet Size ER11 ER Collet,55018074,7
+collet,Haimer 81.110.4.5 | 4.50mm Collet Size ER11 ER Collet,55018075,8
+collet,Haimer 81.110.5.0 | 5.00mm Collet Size ER11 ER Collet,55018076,9
+collet,Haimer 81.110.5.5 | 5.50mm Collet Size ER11 ER Collet,55018077,10
+collet,Haimer 81.110.6.0 | 6.00mm Collet Size ER11 ER Collet,55018078,11
+collet,Haimer 81.110.6.5 | 6.50mm Collet Size ER11 ER Collet,55018079,12
+collet,Haimer 81.110.7.0 | 7.00mm Collet Size ER11 ER Collet,55018080,13
+collet,Haimer 81.160.01 | 1.00mm Collet Size ER16 ER Collet,55018090,14
+collet,Haimer 81.160.02 | 2.00mm Collet Size ER16 ER Collet,55018096,15
+collet,Haimer 81.160.03 | 3.00mm Collet Size ER16 ER Collet,55018105,16
+collet,Haimer 81.160.04 | 4.00mm Collet Size ER16 ER Collet,55018114,17
+collet,Haimer 81.160.05 | 5.00mm Collet Size ER16 ER Collet,55018115,18
+collet,Haimer 81.160.06 | 6.00mm Collet Size ER16 ER Collet,55018116,19
+collet,Haimer 81.160.07 | 7.00mm Collet Size ER16 ER Collet,55018117,20
+collet,Haimer 81.160.08 | 8.00mm Collet Size ER16 ER Collet,55018118,21
+collet,Haimer 81.160.09 | 9.00mm Collet Size ER16 ER Collet,55018119,22
+collet,Haimer 81.160.1.5 | 1.50mm Collet Size ER16 ER Collet,55018120,23
+collet,Haimer 81.160.10 | 10.00mm Collet Size ER16 ER Collet,55018124,24
+,,,
+collet chuck,Eppinger 2015-0403 | Collet Chuck,55114897,1
+collet chuck,Eppinger 2501-0080 | Collet Chuck,55114898,2
+collet chuck,Eppinger 2501-0081 | Collet Chuck,55114899,3
+collet chuck,Eppinger 2501-0349 | Collet Chuck,55114900,4
+collet chuck,Eppinger 4.201.200 | Collet Chuck,55114955,5
+collet chuck,Eppinger 4015-0408 | Collet Chuck,55114978,6
+collet chuck,Parlec C40-25ERF400 | ER Collet Chuck,55002754,7
+collet chuck,Parlec C40-20DC2 | Double-Angle Collet Chuck,55002756,8
+collet chuck,Parlec B40-10SC3 | Single-Angle Collet Chuck,55002813,9
+collet chuck,Parlec B40-32ERF400 | ER Collet Chuck,55002814,10
+collet chuck,Parlec C40-10SC6 | Single-Angle Collet Chuck,55002815,11
+collet chuck,Parlec C50-16ERF400 | ER Collet Chuck,55002818,12
+collet chuck,Parlec C50-16ERF600 | ER Collet Chuck,55002819,13
+collet chuck,Parlec C40-20DC3 | Double-Angle Collet Chuck,55002820,14
+collet chuck,Parlec C50-32ERF600 | ER Collet Chuck,55002821,15
+collet chuck,Parlec C40-18DC5 | Double-Angle Collet Chuck,55002822,16
+collet chuck,Parlec B40-16ERF300 | ER Collet Chuck,55002851,17
+collet chuck,Parlec C40-20DC5 | Double-Angle Collet Chuck,55002857,18
+collet chuck,Parlec C40-18DC2 | Double-Angle Collet Chuck,55002858,19
+collet chuck,Parlec C50-18DC6 | Double-Angle Collet Chuck,55002859,20
+collet chuck,Parlec C40-10SC5 | Single-Angle Collet Chuck,55002918,21
+collet chuck,Parlec C50-10SC5 | Single-Angle Collet Chuck,55002919,22
+collet chuck,Parlec C40-15SC4 | Single-Angle Collet Chuck,55002920,23
+collet chuck,Parlec C50-10SC3 | Single-Angle Collet Chuck,55002921,24
+,,,
+drill bit,Big Daishowa 40.56036.0317 | AlCrN Coated Step Drill Bit,10266798,1
+drill bit,Emuge TG203344.032009 | 62.00mm Overall Length Step Drill Bit,10226527,2
+drill bit,Emuge TG203344.032011 | 62.00mm Overall Length Step Drill Bit,10226529,3
+drill bit,Emuge TG203344.035010 | 62.00mm Overall Length Step Drill Bit,10226544,4
+drill bit,Emuge TG203344.035011 | 62.00mm Overall Length Step Drill Bit,10226545,5
+drill bit,Emuge TG203344.038012 | 62.00mm Overall Length Step Drill Bit,10226556,6
+drill bit,Emuge TG203344.039012 | 62.00mm Overall Length Step Drill Bit,10226566,7
+drill bit,Emuge TG203344.041011 | 66.00mm Overall Length Step Drill Bit,10226571,8
+drill bit,Emuge TG203344.052014 | 79.00mm Overall Length Step Drill Bit,10226643,9
+drill bit,Emuge TG203344.057520 | 79.00mm Overall Length Step Drill Bit,10226675,10
+drill bit,Emuge TG203344.059519 | 79.00mm Overall Length Step Drill Bit,10226683,11
+drill bit,Emuge TG203344.069023 | 89.00mm Overall Length Step Drill Bit,10226727,12
+drill bit,Emuge TG203344.072518 | 89.00mm Overall Length Step Drill Bit,10226744,13
+drill bit,Emuge TG203344.072524 | 89.00mm Overall Length Step Drill Bit,10226750,14
+drill bit,Emuge TG203344.080018 | 89.00mm Overall Length Step Drill Bit,10226791,15
+drill bit,Emuge TG203344.080021 | 89.00mm Overall Length Step Drill Bit,10226794,16
+drill bit,Emuge TG203344.080022 | 89.00mm Overall Length Step Drill Bit,10226795,17
+drill bit,Emuge TG203344.080023 | 89.00mm Overall Length Step Drill Bit,10226796,18
+drill bit,Emuge TG203344.080024 | 89.00mm Overall Length Step Drill Bit,10226797,19
+drill bit,Emuge TG203344.088018 | 102.00mm Overall Length Step Drill Bit,10226829,20
+drill bit,Emuge TG203344.088022 | 102.00mm Overall Length Step Drill Bit,10226833,21
+drill bit,Emuge TG203344.088028 | 102.00mm Overall Length Step Drill Bit,10226839,22
+drill bit,Emuge TG203344.105531 | 107.00mm Overall Length Step Drill Bit,10227009,23
+drill bit,Emuge TG203344.105532 | 107.00mm Overall Length Step Drill Bit,10227010,24
+,,,
+end mill,No products found,,
+,,,
+face mill,Pramet 200T03R-IS90AD16E163-C | Indexable High-Feed Face Mill,23145872,1
+face mill,Pramet 250T04R-IS90AD16E163-C | Indexable High-Feed Face Mill,23145878,2
+face mill,Pramet 250T04R-IS90AD16E268-C | Indexable High-Feed Face Mill,23145879,3
+face mill,Pramet 300T04R-IS90AD16E217-C | Indexable High-Feed Face Mill,23145883,4
+face mill,Pramet 300T04R-IS90AD16E315-C | Indexable High-Feed Face Mill,23145884,5
+face mill,Pramet 400T05R-IS90AD16E315-C | Indexable High-Feed Face Mill,23145887,6
+face mill,Pramet 100E2R130M12-ISRD12-CF | Indexable Copy Face Mill,23144598,7
+face mill,OSG 7802573 | OSG PHOENIX Indexable Square-Shoulder Face Mill,55079083,8
+face mill,OSG 8070265 | EXOCARB 3 Flute Indexable Square-Shoulder Face Mill,10294497,9
+face mill,OSG 8070266 | EXOCARB 4 Flute Indexable Square-Shoulder Face Mill,10294498,10
+face mill,OSG 6450001 | OSG PHOENIX 3 Flute Indexable High-Feed Face Mill,55078466,11
+face mill,OSG 7800052 | OSG PHOENIX 4 Flute Indexable High-Feed Face Mill,55078478,12
+face mill,OSG 7800053 | OSG PHOENIX 5 Flute Indexable High-Feed Face Mill,55078479,13
+face mill,OSG 7802850 | OSG PHOENIX 3 Flute Indexable Square-Shoulder Face Mill,55079161,14
+face mill,OSG 7802851 | OSG PHOENIX 3 Flute Indexable Square-Shoulder Face Mill,55079162,15
+face mill,OSG 7802852 | OSG PHOENIX 4 Flute Indexable Square-Shoulder Face Mill,55079163,16
+face mill,OSG 7803011 | OSG PHOENIX 6 Flute Indexable Square-Shoulder Face Mill,55079174,17
+face mill,OSG 7803012 | OSG PHOENIX 7 Flute Indexable Square-Shoulder Face Mill,55079175,18
+face mill,OSG 7803013 | OSG PHOENIX 9 Flute Indexable Square-Shoulder Face Mill,55079176,19
+face mill,OSG 7803100 | OSG PHOENIX 3 Flute Indexable Square-Shoulder Face Mill,55079177,20
+face mill,OSG 7803101 | OSG PHOENIX 4 Flute Indexable Square-Shoulder Face Mill,55079178,21
+face mill,OSG 7803102 | OSG PHOENIX 3 Flute Indexable Square-Shoulder Face Mill,55079179,22
+face mill,OSG 7803103 | OSG PHOENIX 5 Flute Indexable Square-Shoulder Face Mill,55079180,23
+face mill,OSG 7803104 | OSG PHOENIX 5 Flute Indexable Square-Shoulder Face Mill,55079181,24
+,,,
+rotary table,"All Industrial 45000 | 8"" Horizontal/Vertical Rotary Table",50003634,1
+rotary table,"STM 326560 | 4"" Diameter x 117.00mm Height Universal Tilting Rotary Table",50034239,2
+rotary table,"STM 326562 | 6"" Diameter x 140.00mm Height Universal Tilting Rotary Table",50034240,3
+rotary table,"STM 326498 | 4"" Diameter x 0.4300"" Width x 3.15"" Height Horizontal/Vertical Rotary and Dividing Table",50034232,4
+rotary table,"STM 326500 | 6"" Diameter x 0.4300"" Width x 3.11"" Height Horizontal/Vertical Rotary and Dividing Table",50034233,5
+rotary table,"STM 326505 | 8"" Diameter x 0.5500"" Width x 4.13"" Height Horizontal/Vertical Rotary and Dividing Table",50034234,6
+rotary table,"STM 326510 | 10"" Diameter x 0.5500"" Width x 4.53"" Height Horizontal/Vertical Rotary and Dividing Table",50034235,7
+rotary table,"STM 326515 | 12"" Diameter x 0.6300"" Width x 5.32"" Height Horizontal/Vertical Rotary and Dividing Table",50034236,8
+rotary table,"STM 326520 | 14"" Diameter x 0.6300"" Width x 5.51"" Height Horizontal/Vertical Rotary and Dividing Table",50034237,9
+rotary table,"STM 326525 | 16"" Diameter x 0.6300"" Width x 6.10"" Height Horizontal/Vertical Rotary and Dividing Table",50034238,10
+rotary table,"All Industrial 45010 | Bridgeport Type Milling Machine Kit - 8"" H/V Rotary Table, Kurt DX6 Vise, 12 Pc. R8 Collet Set & 58 Pc. 5/8"" Clamping Kit",50003635,11
+,,,
+v block,"Starrett 566 | 1-3/4"" Capacity Magnetic V-Block",30027307,1
+v block,"STM 225710 | 4"" OAL x 3-1/2"" Width V-Block",30122314,2
+v block,"STM 230135 | 2-3/8"" OAL x 2"" Width V-Block",30122317,3
+v block,"STM 231072 | 1-19/32"" OAL x 1-1/4"" Width V-Block",30122360,4
+v block,"STM 231074 | 2"" OAL x 1-1/2"" Width V-Block",30122361,5
+v block,"STM 231076 | 2-3/4"" OAL x 1-3/4"" Width V-Block",30122362,6
+v block,"STM 231078 | 2-3/4"" OAL x 2-1/2"" Width V-Block",30122363,7
+v block,"STM 231082 | 3-19/32"" OAL x 1-7/8"" Width V-Block",30122364,8
+v block,"STM 231084 | 4"" OAL x 3"" Width V-Block",30122365,9
+v block,"STM 231086 | 4"" OAL x 3"" Width V-Block",30122366,10
+v block,"STM 231088 | 3-3/16"" OAL x 2-3/8"" Width V-Block",30122367,11
+v block,"STM 231090 | 3-3/16"" OAL x 2-3/8"" Width V-Block",30122368,12
+v block,"STM 231104 | 4"" OAL x 1-9/16"" Width V-Block",30122373,13
+v block,"STM 231106 | 5"" OAL x 2"" Width V-Block",30122374,14
+v block,"STM 231108 | 6"" OAL x 2-7/16"" Width V-Block",30122375,15
+v block,"STM 231110 | 8"" OAL x 4"" Width V-Block",30122376,16
+v block,"STM 231112 | 10"" OAL x 5"" Width V-Block",30122377,17
+v block,"STM 231114 | 12"" OAL x 6"" Width V-Block",30122378,18
+v block,STM 231116 | 95.00mm OAL x 35.00mm Width V-Block,30122379,19
+v block,STM 231118 | 100 OAL x 30.00mm Width V-Block,30122380,20
+v block,STM 231120 | 120 OAL x 35.00mm Width V-Block,30122381,21
+v block,"STM 370556 | 2"" OAL x 1-7/8"" Width V-Block",30122729,22
+v block,"STM 370561 | 3"" OAL x 2-5/8"" Width V-Block",30122730,23
+v block,"STM 370566 | 4"" OAL x 3-1/4"" Width V-Block",30122731,24
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
