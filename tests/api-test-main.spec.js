@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const csv = require('csv-parser');
+const ReportGeneratorClient = require('../report-generator-client');
 
 // Helper function to check if a product is related to the query
 function isProductRelated(product, query) {
@@ -287,7 +288,7 @@ test.describe('API Testing - Complete Validation Suite', () => {
           params: {
             siteId: 'os7898',
             q: testCase.query,
-            resultsPerPage: '48',
+            resultsPerPage: '24',
             use_cache: 'false'
           },
           timeout: 30000
@@ -490,12 +491,21 @@ test.describe('API Testing - Complete Validation Suite', () => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
     const timeString = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
     
-    // Save CSV output only
+    // Save CSV output
     const outputCsvPath = `./Output Reports/POSITION_COMPARISON_${timestamp}_${timeString}.csv`;
     const csvContent = generateCSV(testResults);
     fs.writeFileSync(outputCsvPath, csvContent);
     console.log(`\n💾 Results Saved:`);
     console.log(`  📋 Position Comparison Report: ${outputCsvPath}`);
+    
+    // Generate HTML report with charts
+    try {
+      const reportGenerator = new ReportGeneratorClient();
+      const htmlReportPath = await reportGenerator.generateHTMLReport(csvContent, './Output Reports');
+      console.log(`  📊 HTML Report with Charts: ${htmlReportPath}`);
+    } catch (error) {
+      console.log(`  ⚠️ Could not generate HTML report: ${error.message}`);
+    }
     
     console.log(`\n${'='.repeat(80)}`);
     console.log('🎉 API TESTING COMPLETED SUCCESSFULLY');
