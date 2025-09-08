@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Accuracy Filter</title>
+    <style>
+        .query-section { 
+            padding: 10px; 
+            margin: 10px; 
+            border: 1px solid #ccc; 
+        }
+        .query-hidden { 
+            display: none !important; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Accuracy Filter</h1>
+    
+    <select id="accuracyFilter" onchange="applyFilters()">
+        <option value="all">All Accuracy Levels</option>
+        <option value="90-100">90-100%</option>
+        <option value="80-90">80-90%</option>
+        <option value="70-80">70-80%</option>
+        <option value="60-70">60-70%</option>
+        <option value="50-60">50-60%</option>
+        <option value="40-50">40-50%</option>
+        <option value="30-40">30-40%</option>
+        <option value="20-30">20-30%</option>
+        <option value="10-20">10-20%</option>
+        <option value="0-10">0-10%</option>
+    </select>
+    
+    <div id="filterInfo"></div>
+    
+    <div class="query-section" data-accuracy="100.00">
+        <h3>Query 1: 100% Accuracy</h3>
+    </div>
+    
+    <div class="query-section" data-accuracy="85.50">
+        <h3>Query 2: 85.5% Accuracy</h3>
+    </div>
+    
+    <div class="query-section" data-accuracy="33.33">
+        <h3>Query 3: 33.33% Accuracy</h3>
+    </div>
+    
+    <div class="query-section" data-accuracy="0.00">
+        <h3>Query 4: 0% Accuracy</h3>
+    </div>
+    
+    <div class="query-section" data-accuracy="67.89">
+        <h3>Query 5: 67.89% Accuracy</h3>
+    </div>
+    
+    <script>
+        function applyFilters() {
+            const accuracyFilter = document.getElementById('accuracyFilter').value;
+            const querySections = document.querySelectorAll('.query-section');
+            const filterInfo = document.getElementById('filterInfo');
+            
+            let visibleCount = 0;
+            const totalCount = querySections.length;
+            
+            querySections.forEach(section => {
+                let shouldShow = true;
+                
+                if (accuracyFilter !== 'all') {
+                    const accuracyValue = section.getAttribute('data-accuracy');
+                    if (accuracyValue !== null) {
+                        const accuracy = parseFloat(accuracyValue);
+                        
+                        switch(accuracyFilter) {
+                            case '90-100':
+                                shouldShow = accuracy >= 90 && accuracy <= 100;
+                                break;
+                            case '80-90':
+                                shouldShow = accuracy >= 80 && accuracy < 90;
+                                break;
+                            case '70-80':
+                                shouldShow = accuracy >= 70 && accuracy < 80;
+                                break;
+                            case '60-70':
+                                shouldShow = accuracy >= 60 && accuracy < 70;
+                                break;
+                            case '50-60':
+                                shouldShow = accuracy >= 50 && accuracy < 60;
+                                break;
+                            case '40-50':
+                                shouldShow = accuracy >= 40 && accuracy < 50;
+                                break;
+                            case '30-40':
+                                shouldShow = accuracy >= 30 && accuracy < 40;
+                                break;
+                            case '20-30':
+                                shouldShow = accuracy >= 20 && accuracy < 30;
+                                break;
+                            case '10-20':
+                                shouldShow = accuracy >= 10 && accuracy < 20;
+                                break;
+                            case '0-10':
+                                shouldShow = accuracy >= 0 && accuracy < 10;
+                                break;
+                        }
+                    }
+                }
+                
+                if (shouldShow) {
+                    section.classList.remove('query-hidden');
+                    visibleCount++;
+                } else {
+                    section.classList.add('query-hidden');
+                }
+            });
+            
+            filterInfo.textContent = 'Showing ' + visibleCount + ' of ' + totalCount + ' queries';
+        }
+    </script>
+</body>
+</html>

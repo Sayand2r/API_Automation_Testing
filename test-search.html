@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Test Instructions</title>
+</head>
+<body>
+    <h1>✅ Search is Fixed!</h1>
+    
+    <h2>How to Test:</h2>
+    <ol>
+        <li>Open the report: <code>Output Reports/API_TEST_REPORT_2025-09-08T14-03-23-837Z.html</code></li>
+        <li>In the search box, type just: <strong>carbide</strong> (no quotes needed!)</li>
+        <li>Should show queries containing "carbide"</li>
+        <li>Try: <strong>tipped</strong> (no quotes)</li>
+        <li>Try: <strong>gripper</strong> (no quotes)</li>
+        <li>Try: <strong>jergens</strong> (no quotes)</li>
+    </ol>
+    
+    <h2>What Changed:</h2>
+    <ul>
+        <li>❌ Before: Had to type <code>"carbide tipped"</code> with quotes</li>
+        <li>✅ Now: Just type <code>carbide</code> or <code>tipped</code></li>
+        <li>✅ Search matches the actual query content, not the UI text</li>
+    </ul>
+    
+    <h2>Examples:</h2>
+    <table border="1" style="border-collapse: collapse; padding: 10px;">
+        <tr>
+            <th>You Type</th>
+            <th>Finds Queries Like</th>
+        </tr>
+        <tr>
+            <td>carbide</td>
+            <td>"carbide tipped", "carbide tools", etc.</td>
+        </tr>
+        <tr>
+            <td>gripper</td>
+            <td>"round gripper", "carbide gripper", etc.</td>
+        </tr>
+        <tr>
+            <td>jergens</td>
+            <td>Any query containing "jergens"</td>
+        </tr>
+    </table>
+</body>
+</html>

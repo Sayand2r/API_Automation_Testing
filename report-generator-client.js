@@ -401,6 +401,10 @@ class ReportGeneratorClient {
         .query-stat.active .query-stat-label {
             color: white;
         }
+        
+        .query-hidden {
+            display: none !important;
+        }
 
         @media (max-width: 768px) {
             .query-content {
@@ -464,12 +468,64 @@ class ReportGeneratorClient {
             </div>
         </div>
         
+        <!-- Search and Filter Controls -->
+        <div style="padding: 20px; background: #f8f9fa;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <!-- Search Box with Clear Button -->
+                <div style="position: relative; display: inline-flex; align-items: center;">
+                    <input 
+                        type="text" 
+                        id="simpleQuerySearch" 
+                        placeholder="🔍 Search for a query (e.g., 'carbide', 'gripper')..." 
+                        style="width: 400px; padding: 12px 40px 12px 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; outline: none;"
+                        onkeyup="applyFilters()"
+                    />
+                    <button 
+                        id="clearSearchBtn"
+                        onclick="clearSearchQuery()" 
+                        style="position: absolute; right: 5px; padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; display: none;"
+                        title="Clear search"
+                    >
+                        ✕
+                    </button>
+                </div>
+                
+                <!-- Accuracy Filter Dropdown -->
+                <select 
+                    id="accuracyFilter" 
+                    onchange="applyFilters()"
+                    style="padding: 12px 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; outline: none; background: white; cursor: pointer;"
+                >
+                    <option value="all">All Accuracy Levels</option>
+                    <option value="90-100">90-100%</option>
+                    <option value="80-90">80-90%</option>
+                    <option value="70-80">70-80%</option>
+                    <option value="60-70">60-70%</option>
+                    <option value="50-60">50-60%</option>
+                    <option value="40-50">40-50%</option>
+                    <option value="30-40">30-40%</option>
+                    <option value="20-30">20-30%</option>
+                    <option value="10-20">10-20%</option>
+                    <option value="0-10">0-10%</option>
+                </select>
+                
+                <button 
+                    id="clearAllFiltersBtn"
+                    onclick="clearFilters()" 
+                    style="padding: 12px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: none;"
+                >
+                    Clear All Filters
+                </button>
+            </div>
+            <div id="filterInfo" style="margin-top: 10px; color: #666; font-size: 14px; text-align: center;"></div>
+        </div>
+        
         ${Object.entries(queryGroups).map(([query, data], index) => {
             const accuracyClass = data.accuracy >= 80 ? 'accuracy-high' : 
                                  data.accuracy >= 50 ? 'accuracy-medium' : 'accuracy-low';
             
             return `
-            <div class="query-section">
+            <div class="query-section" data-accuracy="${data.accuracy}">
                 <div class="query-header">
                     <h2 class="query-title">Query: "${query}"</h2>
                     <div class="accuracy-badge ${accuracyClass}">${data.accuracy}% Accuracy</div>
@@ -789,6 +845,156 @@ class ReportGeneratorClient {
                     }
                 });
             });
+        });
+        
+        // Combined filter functionality for search and accuracy
+        function applyFilters() {
+            const searchTerm = document.getElementById('simpleQuerySearch').value.toLowerCase().trim();
+            const accuracyFilter = document.getElementById('accuracyFilter').value;
+            const querySections = document.querySelectorAll('.query-section');
+            const filterInfo = document.getElementById('filterInfo');
+            const clearAllBtn = document.getElementById('clearAllFiltersBtn');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            
+            let visibleCount = 0;
+            const totalCount = querySections.length;
+            
+            // Show/hide clear buttons
+            if (searchTerm) {
+                clearSearchBtn.style.display = 'block';
+            } else {
+                clearSearchBtn.style.display = 'none';
+            }
+            
+            if (searchTerm || accuracyFilter !== 'all') {
+                clearAllBtn.style.display = 'inline-block';
+            } else {
+                clearAllBtn.style.display = 'none';
+            }
+            
+            // Filter query sections
+            querySections.forEach(section => {
+                let shouldShow = true;
+                
+                // Check search term
+                if (searchTerm) {
+                    const queryTitle = section.querySelector('.query-title');
+                    if (queryTitle) {
+                        const fullText = queryTitle.textContent;
+                        const queryMatch = fullText.match(/Query: "(.+)"/);
+                        const queryText = queryMatch ? queryMatch[1].toLowerCase() : fullText.toLowerCase();
+                        
+                        if (!queryText.includes(searchTerm)) {
+                            shouldShow = false;
+                        }
+                    }
+                }
+                
+                // Check accuracy filter
+                if (shouldShow && accuracyFilter !== 'all') {
+                    // Use data attribute for more reliable accuracy value
+                    const accuracyValue = section.getAttribute('data-accuracy');
+                    if (accuracyValue !== null) {
+                        const accuracy = parseFloat(accuracyValue);
+                        
+                        switch(accuracyFilter) {
+                            case '90-100':
+                                shouldShow = accuracy >= 90 && accuracy <= 100;
+                                break;
+                            case '80-90':
+                                shouldShow = accuracy >= 80 && accuracy < 90;
+                                break;
+                            case '70-80':
+                                shouldShow = accuracy >= 70 && accuracy < 80;
+                                break;
+                            case '60-70':
+                                shouldShow = accuracy >= 60 && accuracy < 70;
+                                break;
+                            case '50-60':
+                                shouldShow = accuracy >= 50 && accuracy < 60;
+                                break;
+                            case '40-50':
+                                shouldShow = accuracy >= 40 && accuracy < 50;
+                                break;
+                            case '30-40':
+                                shouldShow = accuracy >= 30 && accuracy < 40;
+                                break;
+                            case '20-30':
+                                shouldShow = accuracy >= 20 && accuracy < 30;
+                                break;
+                            case '10-20':
+                                shouldShow = accuracy >= 10 && accuracy < 20;
+                                break;
+                            case '0-10':
+                                shouldShow = accuracy >= 0 && accuracy < 10;
+                                break;
+                            default:
+                                shouldShow = true;
+                        }
+                    }
+                }
+                
+                // Show or hide section
+                if (shouldShow) {
+                    section.classList.remove('query-hidden');
+                    visibleCount++;
+                } else {
+                    section.classList.add('query-hidden');
+                }
+            });
+            
+            // Update filter info
+            let infoText = 'Showing ' + visibleCount + ' of ' + totalCount + ' queries';
+            
+            if (searchTerm && accuracyFilter !== 'all') {
+                infoText += ' (filtered by search and accuracy)';
+            } else if (searchTerm) {
+                infoText += ' (filtered by search)';
+            } else if (accuracyFilter !== 'all') {
+                infoText += ' (filtered by accuracy)';
+            } else {
+                infoText = '';
+            }
+            
+            filterInfo.textContent = infoText;
+            
+            // Auto-scroll to first visible result if filters are active
+            if ((searchTerm || accuracyFilter !== 'all') && visibleCount > 0) {
+                setTimeout(() => {
+                    const firstVisible = document.querySelector('.query-section:not(.query-hidden)');
+                    if (firstVisible) {
+                        firstVisible.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            }
+        }
+        
+        function clearSearchQuery() {
+            document.getElementById('simpleQuerySearch').value = '';
+            applyFilters();
+            document.getElementById('simpleQuerySearch').focus();
+        }
+        
+        function clearFilters() {
+            document.getElementById('simpleQuerySearch').value = '';
+            document.getElementById('accuracyFilter').value = 'all';
+            applyFilters();
+            document.getElementById('simpleQuerySearch').focus();
+        }
+        
+        // Handle keyboard shortcuts
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('simpleQuerySearch');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        clearFilters();
+                    }
+                });
+            }
+            
+            // Apply initial filters in case of browser back/forward
+            applyFilters();
         });
     </script>
 </body>
