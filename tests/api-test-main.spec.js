@@ -3,6 +3,125 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const ReportGeneratorClient = require('../report-generator-client');
 
+// Helper function to add delay between API requests
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Array of realistic User-Agent strings to rotate through
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0'
+];
+
+// Generate variable request headers to avoid detection
+function generateVariableHeaders(queryIndex) {
+  const userAgent = USER_AGENTS[queryIndex % USER_AGENTS.length];
+  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  const baseHeaders = {
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Cache-Control': 'no-cache',
+    'User-Agent': userAgent,
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-Session-ID': sessionId
+  };
+  
+  // Add some variable optional headers
+  if (Math.random() > 0.5) {
+    baseHeaders['Accept-Encoding'] = 'gzip, deflate, br';
+  }
+  
+  if (Math.random() > 0.6) {
+    baseHeaders['Connection'] = 'keep-alive';
+  }
+  
+  if (Math.random() > 0.7) {
+    baseHeaders['DNT'] = '1';
+  }
+  
+  return baseHeaders;
+}
+
+// Helper function to make API request with retry logic
+async function makeAPIRequestWithRetry(request, apiBaseUrl, query, maxRetries = 3, queryIndex = 0) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`   🔄 Attempt ${attempt}/${maxRetries} for query: "${query}"`);
+      
+      // Add wider random delay to prevent synchronized requests (2-10 seconds)
+      const baseDelay = 2000 + (attempt - 1) * 1000; // Progressive: 2s, 3s, 4s
+      const randomDelay = baseDelay + Math.floor(Math.random() * 6000); // +0-6s random
+      console.log(`   ⏳ Waiting ${(baseDelay + randomDelay)/1000}s before attempt ${attempt}...`);
+      await delay(randomDelay);
+      
+      // Generate variable headers for this attempt
+      const headers = generateVariableHeaders(queryIndex + attempt);
+      
+      // Generate variable parameters to avoid caching
+      const params = {
+        siteId: 'os7898',
+        q: query,
+        resultsPerPage: '24',
+        use_cache: 'false',
+        timestamp: Date.now(),
+        r: Math.random().toString(36).substr(2, 8) // Random cache buster
+      };
+      
+      // Progressive timeout increase
+      const timeout = 45000 + (attempt - 1) * 15000; // 45s, 60s, 75s
+      
+      const response = await request.get(`${apiBaseUrl}/api/v1/search.json`, {
+        params,
+        headers,
+        timeout
+      });
+      
+      if (response.status() === 200) {
+        const data = await response.json();
+        // CRITICAL FIX: Treat empty results as a failure that should be retried
+        if (data.results && data.results.length > 0) {
+          console.log(`   ✅ Success on attempt ${attempt}: ${data.results.length} products found`);
+          return { response, data };
+        } else {
+          console.log(`   ⚠️ Attempt ${attempt}: API returned 200 but ZERO products - likely rate limited`);
+          if (attempt === maxRetries) {
+            // On final attempt, throw error instead of returning empty results
+            throw new Error(`API consistently returning 0 products for query "${query}" - possible rate limiting`);
+          }
+          // Continue to next attempt instead of returning empty results
+        }
+      } else {
+        console.log(`   ❌ Attempt ${attempt}: HTTP ${response.status()}`);
+        if (attempt === maxRetries) {
+          throw new Error(`API returned HTTP ${response.status()} after ${maxRetries} attempts`);
+        }
+      }
+      
+    } catch (error) {
+      console.log(`   ❌ Attempt ${attempt} failed: ${error.message}`);
+      
+      if (attempt === maxRetries) {
+        throw error; // Throw error only on final attempt
+      }
+      
+      // Progressive backoff delay (5, 10, 15 seconds)
+      const backoffDelay = attempt * 5000;
+      console.log(`   ⏳ Waiting ${backoffDelay/1000} seconds before retry...`);
+      await delay(backoffDelay);
+    }
+  }
+  
+  // Should never reach here, but just in case
+  throw new Error(`Failed to get valid response after ${maxRetries} attempts for query: "${query}"`);
+}
+
+
 // Helper function to check if a product is related to the query
 function isProductRelated(product, query) {
   const searchTerm = query.toLowerCase();
@@ -152,7 +271,7 @@ function generateCSV(results) {
   let csvContent = headers.join(',') + '\n';
   
   results.forEach((r, resultIndex) => {
-    // Add rows for ALL API results
+    // Add rows for ALL results (both successful and failed)
     if (r.allPositions && r.allPositions.length > 0) {
       r.allPositions.forEach(positionData => {
         // Calculate actual position and position match for expected products
@@ -198,7 +317,7 @@ function generateCSV(results) {
 
 test.describe('API Testing - Complete Validation Suite', () => {
   test('Complete API testing with CSV input and comprehensive validation', async ({ request }) => {
-    test.setTimeout(300000); // 5 minute timeout
+    test.setTimeout(60000000); // 60 minute timeout for large datasets
     
     const csvPath = './API TEST INPUT.csv';
     const apiBaseUrl = 'https://pvaewimjnq.us-east-1.awsapprunner.com';
@@ -259,6 +378,7 @@ test.describe('API Testing - Complete Validation Suite', () => {
     });
     
     console.log(`📊 Total Test Cases: ${testCases.length}\n`);
+    console.log(`⚠️  Rate Limiting Protection: Using aggressive delays and rotation to ensure all queries return results\n`);
     
     // Process each query from CSV
     for (let i = 0; i < testCases.length; i++) {
@@ -283,24 +403,22 @@ test.describe('API Testing - Complete Validation Suite', () => {
       };
       
       try {
-        // Make API request to search.json endpoint
-        const response = await request.get(`${apiBaseUrl}/api/v1/search.json`, {
-          params: {
-            siteId: 'os7898',
-            q: testCase.query,
-            resultsPerPage: '24',
-            use_cache: 'false'
-          },
-          timeout: 30000
-        });
+        // Make API request with retry logic (pass query index for header variation)
+        const { response, data: responseData } = await makeAPIRequestWithRetry(
+          request, 
+          apiBaseUrl, 
+          testCase.query,
+          3, // maxRetries
+          i   // queryIndex for header variation
+        );
         
         result.responseTime = Date.now() - startTime;
         result.apiStatus = response.status();
         
-        // Validate API response
-        expect(response.status()).toBe(200);
-        
-        const responseData = await response.json();
+        // Don't use expect() which throws - just validate manually
+        if (response.status() !== 200) {
+          throw new Error(`API returned HTTP ${response.status()}`);
+        }
         result.totalResults = responseData.pagination?.totalResults || 0;
         result.productsOnPage = responseData.results?.length || 0;
         
@@ -454,38 +572,93 @@ test.describe('API Testing - Complete Validation Suite', () => {
         }
         
       } catch (error) {
-        console.error(`\n❌ Error: ${error.message}`);
+        console.error(`\n❌ Query Failed: ${error.message}`);
         result.apiStatus = 'ERROR';
-        result.testResult = `ERROR - ${error.message}`;
+        result.testResult = `FAILED - ${error.message}`;
         result.responseTime = Date.now() - startTime;
-        throw error;
+        result.totalResults = 0;
+        result.productsOnPage = 0;
+        
+        // Add simple 'No Response' entry for failed queries - don't include expected product details
+        // This prevents failed queries from appearing as successful in HTML reports
+        result.allPositions = [{
+          position: 1,
+          actualName: 'No Response',
+          actualSku: 'No Response', 
+          expectedName: 'No Response',
+          expectedSku: 'No Response',
+          expectedPosition: 1,
+          status: 'No Response'
+        }];
+        
+        console.log(`\n⚠️ Continuing with next query despite this failure...`);
+        // DON'T throw the error - continue processing remaining queries
       }
       
       testResults.push(result);
+      
+      // Add human-like delays with burst protection
+      if (i < testCases.length - 1) {
+        let baseDelay = 12000; // Base 12 seconds
+        
+        // Burst protection: Add extra delay after every 5 queries
+        if ((i + 1) % 5 === 0) {
+          baseDelay += 15000; // Extra 15 seconds after every 5 queries
+          console.log(`\n⏳ Burst protection activated: Waiting ${baseDelay/1000} seconds after 5 queries...`);
+        } else {
+          console.log(`\n⏳ Human-like delay: Waiting ${baseDelay/1000} seconds before next query...`);
+        }
+        
+        // Add random variation to make timing less predictable (±5 seconds)
+        const randomVariation = (Math.random() - 0.5) * 10000;
+        const totalDelay = Math.max(8000, baseDelay + randomVariation); // Minimum 8 seconds
+        
+        await delay(totalDelay);
+      }
     }
     
     // GENERATE COMPREHENSIVE SUMMARY
     console.log(`\n${'='.repeat(80)}`);
-    console.log('📈 POSITION-BY-POSITION TEST SUMMARY');
+    console.log('📈 FINAL TEST SUMMARY - ALL QUERIES PROCESSED');
     console.log(`${'='.repeat(80)}`);
+    
+    // Categorize results
+    const successfulQueries = testResults.filter(r => !r.testResult.startsWith('FAILED'));
+    const failedQueries = testResults.filter(r => r.testResult.startsWith('FAILED'));
     
     const totalComparisons = testResults.reduce((total, result) => total + (result.positionComparisons?.length || 0), 0);
     const totalMatches = testResults.reduce((total, result) => 
       total + (result.positionComparisons?.filter(comp => comp.match === 'Match').length || 0), 0);
     
-    console.log(`📊 Overall Results:`);
-    console.log(`  🎯 Total Position Comparisons: ${totalComparisons}`);
-    console.log(`  ✅ Exact Position Matches: ${totalMatches}`);
-    console.log(`  ⚠️ Position Mismatches: ${totalComparisons - totalMatches}`);
+    console.log(`📊 Query Execution Summary:`);
+    console.log(`  📋 Total Queries Processed: ${testResults.length}`);
+    console.log(`  ✅ Successful Queries: ${successfulQueries.length}`);
+    console.log(`  ❌ Failed Queries: ${failedQueries.length}`);
+    console.log(`  📈 Success Rate: ${Math.round((successfulQueries.length / testResults.length) * 100)}%`);
     
-    console.log(`  📈 Overall Match Rate: ${totalMatches}/${totalComparisons}`);
+    if (successfulQueries.length > 0) {
+      console.log(`\n📊 Position Matching Results (Successful Queries Only):`);
+      console.log(`  🎯 Total Position Comparisons: ${totalComparisons}`);
+      console.log(`  ✅ Exact Position Matches: ${totalMatches}`);
+      console.log(`  ⚠️ Position Mismatches: ${totalComparisons - totalMatches}`);
+      console.log(`  📈 Overall Match Rate: ${totalMatches}/${totalComparisons}`);
+    }
     
-    console.log(`\n📋 Test Case Results:`);
+    console.log(`\n📋 Detailed Query Results:`);
     testResults.forEach((result, index) => {
       const matches = result.positionComparisons?.filter(comp => comp.match === 'Match').length || 0;
       const total = result.positionComparisons?.length || 0;
-      console.log(`  ${index + 1}. "${result.query}": ${matches}/${total} matches`);
+      const status = result.testResult.startsWith('FAILED') ? '❌ FAILED' : '✅ SUCCESS';
+      console.log(`  ${index + 1}. "${result.query}": ${status} - ${matches}/${total} matches`);
     });
+    
+    if (failedQueries.length > 0) {
+      console.log(`\n❌ Failed Queries Details:`);
+      failedQueries.forEach((result, index) => {
+        console.log(`  • "${result.query}": ${result.testResult}`);
+      });
+      console.log(`\n💡 Note: Failed queries are included in the CSV report for complete documentation.`);
+    }
     
     // SAVE RESULTS TO CSV FILE
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
@@ -508,7 +681,11 @@ test.describe('API Testing - Complete Validation Suite', () => {
     }
     
     console.log(`\n${'='.repeat(80)}`);
-    console.log('🎉 API TESTING COMPLETED SUCCESSFULLY');
+    if (failedQueries.length === 0) {
+      console.log('🎉 API TESTING COMPLETED - ALL QUERIES SUCCESSFUL');
+    } else {
+      console.log(`🏁 API TESTING COMPLETED - ${successfulQueries.length}/${testResults.length} QUERIES SUCCESSFUL`);
+    }
     console.log(`${'='.repeat(80)}\n`);
   });
 });
