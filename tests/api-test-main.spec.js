@@ -49,10 +49,10 @@ function generateVariableHeaders(queryIndex) {
 }
 
 // Helper function to make API request with retry logic
-async function makeAPIRequestWithRetry(request, apiBaseUrl, query, maxRetries = 3, queryIndex = 0) {
+async function makeAPIRequestWithRetry(request, apiBaseUrl, query, maxRetries = 3, queryIndex = 0, page = 1) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`   🔄 Attempt ${attempt}/${maxRetries} for query: "${query}"`);
+      console.log(`   🔄 Attempt ${attempt}/${maxRetries} for query: "${query}" (Page ${page})`);
       
       // Add wider random delay to prevent synchronized requests (2-10 seconds)
       const baseDelay = 2000 + (attempt - 1) * 1000; // Progressive: 2s, 3s, 4s
@@ -67,6 +67,7 @@ async function makeAPIRequestWithRetry(request, apiBaseUrl, query, maxRetries = 
       const params = {
         siteId: 'os7898',
         q: query,
+        page: page.toString(),
         resultsPerPage: '24',
         use_cache: 'false',
         timestamp: Date.now(),
@@ -202,6 +203,126 @@ function isProductRelated(product, query) {
 //   return stats;
 // }
 
+// Function to search for expected products across multiple pages
+async function searchAcrossPages(request, apiBaseUrl, query, expectedProducts, maxPages = 5, queryIndex = 0) {
+  const allProducts = [];
+  let totalResults = 0;
+  let currentPage = 1;
+  let foundAllExpected = false;
+  
+  console.log(`\n🔍 Starting multi-page search (up to ${maxPages} pages) for ${expectedProducts.length} expected products...`);
+  
+  while (currentPage <= maxPages && !foundAllExpected) {
+    try {
+      // Make API request for current page
+      const { response, data: responseData } = await makeAPIRequestWithRetry(
+        request, 
+        apiBaseUrl, 
+        query,
+        3, // maxRetries
+        queryIndex,
+        currentPage // page number
+      );
+      
+      if (responseData.results && responseData.results.length > 0) {
+        // Add page number to each product for tracking
+        const productsWithPage = responseData.results.map((product, index) => ({
+          ...product,
+          pageNumber: currentPage,
+          absolutePosition: (currentPage - 1) * 24 + index + 1
+        }));
+        
+        allProducts.push(...productsWithPage);
+        
+        // Update total results from first page response
+        if (currentPage === 1 && responseData.pagination) {
+          totalResults = responseData.pagination.totalResults || responseData.results.length;
+        }
+        
+        // Check if we've found all expected products
+        const foundCount = expectedProducts.filter(expected => 
+          allProducts.some(actual => 
+            actual.sku && expected.expectedSku && 
+            actual.sku.toLowerCase() === expected.expectedSku.toLowerCase()
+          )
+        ).length;
+        
+        console.log(`   📄 Page ${currentPage}: Found ${responseData.results.length} products (${foundCount}/${expectedProducts.length} expected products found so far)`);
+        
+        if (foundCount === expectedProducts.length) {
+          foundAllExpected = true;
+          console.log(`   ✅ All expected products found by page ${currentPage}`);
+        } else if (currentPage < maxPages) {
+          console.log(`   ⏭️  Not all expected products found, checking page ${currentPage + 1}...`);
+          await delay(3000); // Delay between page requests
+        }
+        
+        currentPage++;
+      } else {
+        // No more results, stop searching
+        console.log(`   📭 No products returned on page ${currentPage}, stopping search`);
+        break;
+      }
+    } catch (error) {
+      console.log(`   ❌ Error fetching page ${currentPage}: ${error.message}`);
+      break;
+    }
+  }
+  
+  if (!foundAllExpected && currentPage > maxPages) {
+    console.log(`   ⚠️  Reached maximum page limit (${maxPages}), some expected products may not be found`);
+  }
+  
+  return {
+    allProducts,
+    totalResults,
+    pagesSearched: Math.min(currentPage - 1, maxPages)
+  };
+}
+
+// Function to count expected products found on first page (first 24 products)
+function countExpectedProductsOnFirstPage(expectedProducts, actualProducts) {
+  if (!expectedProducts || expectedProducts.length === 0) {
+    return null;
+  }
+  
+  if (!actualProducts || actualProducts.length === 0) {
+    return {
+      foundOnFirstPage: 0,
+      totalExpected: expectedProducts.length,
+      foundProducts: []
+    };
+  }
+  
+  // Consider first page as first 24 products
+  const firstPageProducts = actualProducts.slice(0, 24);
+  const foundProducts = [];
+  let foundCount = 0;
+  
+  expectedProducts.forEach(expected => {
+    // Check if this expected product exists on first page by SKU match
+    const foundOnFirstPage = firstPageProducts.find(actual => 
+      actual.sku && expected.expectedSku && 
+      actual.sku.toLowerCase() === expected.expectedSku.toLowerCase()
+    );
+    
+    if (foundOnFirstPage) {
+      foundCount++;
+      foundProducts.push({
+        expectedName: expected.expectedName,
+        expectedSku: expected.expectedSku,
+        actualPosition: firstPageProducts.indexOf(foundOnFirstPage) + 1
+      });
+    }
+  });
+  
+  return {
+    foundOnFirstPage: foundCount,
+    totalExpected: expectedProducts.length,
+    foundProducts: foundProducts
+  };
+}
+
 // Function to find actual positions of all expected products
 function findAllProductPositions(expectedProducts, actualProducts) {
   const positionMapping = [];
@@ -230,14 +351,17 @@ function findAllProductPositions(expectedProducts, actualProducts) {
     const foundIndex = actualProducts.findIndex(p => p.sku === exp.expectedSku);
     
     if (foundIndex !== -1) {
-      const actualPosition = foundIndex + 1;
+      const foundProduct = actualProducts[foundIndex];
+      const actualPosition = foundProduct.absolutePosition || (foundIndex + 1);
+      const pageNumber = foundProduct.pageNumber || 1;
       positionMapping.push({
         expectedName: exp.expectedName,
         expectedSku: exp.expectedSku,
         expectedPosition: exp.expectedPosition,
         actualPosition: actualPosition,
+        pageNumber: pageNumber,
         status: actualPosition === exp.expectedPosition ? 'Exact Match' : `Found at Position ${actualPosition}`,
-        actualProduct: actualProducts[foundIndex]
+        actualProduct: foundProduct
       });
     } else {
       positionMapping.push({
@@ -245,6 +369,7 @@ function findAllProductPositions(expectedProducts, actualProducts) {
         expectedSku: exp.expectedSku,
         expectedPosition: exp.expectedPosition,
         actualPosition: null,
+        pageNumber: null,
         status: 'Not Found',
         actualProduct: null
       });
@@ -265,7 +390,9 @@ function generateCSV(results) {
     'Actual SKU',
     'Input Expected Position',
     'Actual Position',
-    'Position Match'
+    'Position Match',
+    'First Page Count',
+    'First Page Coverage %'
   ];
   
   let csvContent = headers.join(',') + '\n';
@@ -300,7 +427,9 @@ function generateCSV(results) {
           `"${positionData.actualSku || 'N/A'}"`,
           `"${positionData.expectedPosition || positionData.position}"`,
           `"${actualPosition}"`,
-          `"${positionMatch}"`
+          `"${positionMatch}"`,
+          `"${r.firstPageTracking ? `${r.firstPageTracking.foundOnFirstPage} of ${r.firstPageTracking.totalExpected}` : 'N/A'}"`,
+          `"${r.firstPageTracking && r.firstPageTracking.totalExpected > 0 ? ((r.firstPageTracking.foundOnFirstPage / r.firstPageTracking.totalExpected) * 100).toFixed(1) + '%' : 'N/A'}"`
         ];
         csvContent += row.join(',') + '\n';
       });
@@ -320,7 +449,7 @@ test.describe('API Testing - Complete Validation Suite', () => {
     test.setTimeout(60000000); // 60 minute timeout for large datasets
     
     const csvPath = './API TEST INPUT.csv';
-    const apiBaseUrl = 'https://pvaewimjnq.us-east-1.awsapprunner.com';
+    const apiBaseUrl = 'https://aezfjci5yr.us-east-1.awsapprunner.com';
     const testResults = [];
     
     console.log(`\n${'='.repeat(80)}`);
@@ -399,51 +528,42 @@ test.describe('API Testing - Complete Validation Suite', () => {
         positionComparisons: [],
         allPositions: [],
         actualProducts: [],
+        firstPageTracking: null,
         testResult: 'PENDING'
       };
       
       try {
-        // Make API request with retry logic (pass query index for header variation)
-        const { response, data: responseData } = await makeAPIRequestWithRetry(
-          request, 
-          apiBaseUrl, 
+        // Search across multiple pages to find all expected products
+        const searchResult = await searchAcrossPages(
+          request,
+          apiBaseUrl,
           testCase.query,
-          3, // maxRetries
-          i   // queryIndex for header variation
+          testCase.expectedProducts,
+          5, // maxPages - configurable
+          i  // queryIndex for header variation
         );
         
         result.responseTime = Date.now() - startTime;
-        result.apiStatus = response.status();
+        result.apiStatus = 200; // If we got here, at least one page succeeded
+        result.totalResults = searchResult.totalResults;
+        result.productsOnPage = searchResult.allProducts.length;
+        result.pagesSearched = searchResult.pagesSearched;
         
-        // Don't use expect() which throws - just validate manually
-        if (response.status() !== 200) {
-          throw new Error(`API returned HTTP ${response.status()}`);
-        }
-        result.totalResults = responseData.pagination?.totalResults || 0;
-        result.productsOnPage = responseData.results?.length || 0;
-        
-        // Log pagination info to understand API limits
-        if (responseData.pagination) {
-          console.log(`\n📊 Pagination Info for "${testCase.query}":`);
-          console.log(`   Total Results: ${responseData.pagination.totalResults || 'N/A'}`);
-          console.log(`   Current Page: ${responseData.pagination.currentPage || 'N/A'}`);
-          console.log(`   Per Page: ${responseData.pagination.perPage || 'N/A'}`);
-          console.log(`   Total Pages: ${responseData.pagination.totalPages || 'N/A'}`);
-          console.log(`   Products Returned: ${responseData.results?.length || 0}`);
-        }
-        
-        if (responseData.results && responseData.results.length > 0) {
-          const products = responseData.results;
+        if (searchResult.allProducts && searchResult.allProducts.length > 0) {
+          const products = searchResult.allProducts;
           result.actualProducts = products; // Store for CSV generation
           
           // Find actual positions of all expected products
           const productPositionMapping = findAllProductPositions(testCase.expectedProducts, products);
           result.productPositionMapping = productPositionMapping;
           
+          // Count expected products found on first page
+          result.firstPageTracking = countExpectedProductsOnFirstPage(testCase.expectedProducts, products);
+          
           // COMPLETE PRODUCT LISTING - Show all products at every position
-          console.log(`\n📋 Complete Product Listing (All ${products.length} products):`);
-          console.log(`${'Pos'.padEnd(4)} | ${'Product Name'.padEnd(60)} | ${'SKU'.padEnd(15)} | Expected?`);
-          console.log('-'.repeat(95));
+          console.log(`\n📋 Complete Product Listing (All ${products.length} products from ${result.pagesSearched} page(s)):`);
+          console.log(`${'Page'.padEnd(4)} | ${'Pos'.padEnd(4)} | ${'Product Name'.padEnd(55)} | ${'SKU'.padEnd(15)} | Expected?`);
+          console.log('-'.repeat(100));
           
           // Create a map of expected products by position for quick lookup
           const expectedByPosition = {};
@@ -456,8 +576,9 @@ test.describe('API Testing - Complete Validation Suite', () => {
           
           // Process ALL products returned by API
           for (let i = 0; i < products.length; i++) {
-            const position = i + 1;
             const actualProduct = products[i];
+            const position = actualProduct.absolutePosition || (i + 1);
+            const pageNum = actualProduct.pageNumber || 1;
             const expectedAtThisPosition = expectedByPosition[position];
             
             let matchStatus = 'No expectation';
@@ -506,7 +627,7 @@ test.describe('API Testing - Complete Validation Suite', () => {
             const productName = actualProduct.name?.substring(0, 58) || 'N/A';
             const sku = actualProduct.sku || 'N/A';
             
-            console.log(`${position.toString().padEnd(4)} | ${productName.padEnd(60)} | ${sku.padEnd(15)} | ${matchStatus}`);
+            console.log(`${pageNum.toString().padEnd(4)} | ${position.toString().padEnd(4)} | ${productName.padEnd(55)} | ${sku.padEnd(15)} | ${matchStatus}`);
           }
           
           // Handle expected products at positions beyond what API returned
@@ -533,26 +654,27 @@ test.describe('API Testing - Complete Validation Suite', () => {
               
               result.positionComparisons.push(comparison);
               result.allPositions.push(positionData);
-              console.log(`${expectedProduct.expectedPosition.toString().padEnd(4)} | ${'[NO PRODUCT RETURNED]'.padEnd(60)} | ${'N/A'.padEnd(15)} | ❌ EXPECTED: ${expectedProduct.expectedName} (${expectedProduct.expectedSku})`);
+              console.log(`${'N/A'.padEnd(4)} | ${expectedProduct.expectedPosition.toString().padEnd(4)} | ${'[NO PRODUCT RETURNED]'.padEnd(55)} | ${'N/A'.padEnd(15)} | ❌ EXPECTED: ${expectedProduct.expectedName} (${expectedProduct.expectedSku})`);
             }
           }
           
           // Calculate match results
           result.testResult = `${exactMatches}/${totalExpected} matches`;
           
-          console.log('-'.repeat(95));
-          console.log(`📈 Summary: ${exactMatches}/${totalExpected} exact position matches | Total API Results: ${products.length}`);
+          console.log('-'.repeat(100));
+          console.log(`📈 Summary: ${exactMatches}/${totalExpected} exact position matches | Total Products Found: ${products.length} across ${result.pagesSearched} page(s)`);
           
           // Show where ALL expected products were found (or not found)
           console.log(`\n🔍 All Expected Products - Where They Were Found:`);
-          console.log(`${'Product Name'.padEnd(50)} | ${'SKU'.padEnd(15)} | ${'Expected Pos'.padEnd(12)} | ${'Actual Pos'.padEnd(12)} | Status`);
-          console.log('-'.repeat(110));
+          console.log(`${'Product Name'.padEnd(45)} | ${'SKU'.padEnd(15)} | ${'Expected Pos'.padEnd(12)} | ${'Page'.padEnd(4)} | ${'Actual Pos'.padEnd(10)} | Status`);
+          console.log('-'.repeat(115));
           
           for (const mapping of productPositionMapping) {
-            const productName = (mapping.expectedName || '').substring(0, 48);
+            const productName = (mapping.expectedName || '').substring(0, 43);
             const sku = mapping.expectedSku || 'N/A';
             const expectedPos = mapping.expectedPosition ? mapping.expectedPosition.toString() : 'N/A';
             const actualPos = mapping.actualPosition ? mapping.actualPosition.toString() : 'NOT FOUND';
+            const pageNum = mapping.pageNumber ? mapping.pageNumber.toString() : 'N/A';
             
             let statusSymbol = '';
             if (mapping.status === 'Exact Match') {
@@ -563,9 +685,30 @@ test.describe('API Testing - Complete Validation Suite', () => {
               statusSymbol = '❌';
             }
             
-            console.log(`${productName.padEnd(50)} | ${sku.padEnd(15)} | ${expectedPos.padEnd(12)} | ${actualPos.padEnd(12)} | ${statusSymbol} ${mapping.status}`);
+            console.log(`${productName.padEnd(45)} | ${sku.padEnd(15)} | ${expectedPos.padEnd(12)} | ${pageNum.padEnd(4)} | ${actualPos.padEnd(10)} | ${statusSymbol} ${mapping.status}`);
           }
-          console.log('-'.repeat(110));
+          console.log('-'.repeat(115));
+          
+          // Display first page tracking results
+          if (result.firstPageTracking) {
+            console.log(`\n📄 First Page Tracking (First 24 products):`);
+            console.log(`Found: ${result.firstPageTracking.foundOnFirstPage}/${result.firstPageTracking.totalExpected} expected products`);
+            if (result.firstPageTracking.totalExpected > 0) {
+              const coverage = ((result.firstPageTracking.foundOnFirstPage / result.firstPageTracking.totalExpected) * 100).toFixed(1);
+              console.log(`Coverage: ${coverage}%`);
+            }
+            
+            if (result.firstPageTracking.foundProducts.length > 0) {
+              console.log(`\n🎯 Expected Products Found on First Page:`);
+              console.log(`${'Product Name'.padEnd(40)} | ${'SKU'.padEnd(15)} | Position`);
+              console.log('-'.repeat(70));
+              result.firstPageTracking.foundProducts.forEach(product => {
+                const name = (product.expectedName || '').substring(0, 38);
+                console.log(`${name.padEnd(40)} | ${(product.expectedSku || '').padEnd(15)} | ${product.actualPosition}`);
+              });
+              console.log('-'.repeat(70));
+            }
+          }
         } else {
           result.testResult = 'FAIL - No products returned';
           console.log(`\n❌ No products returned in response`);

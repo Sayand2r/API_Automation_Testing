@@ -17,6 +17,8 @@ class ReportGeneratorClient {
             
             const query = row[0].replace(/"/g, '').trim();
             const positionMatch = row[7] ? row[7].replace(/"/g, '').trim() : '';
+            const firstPageCount = row[8] ? row[8].replace(/"/g, '').trim() : '';
+            const firstPageCoverage = row[9] ? row[9].replace(/"/g, '').trim() : '';
             
             if (!query) continue;
             
@@ -27,6 +29,8 @@ class ReportGeneratorClient {
                     matches: 0,
                     mismatches: 0,
                     notMatch: 0,
+                    firstPageCount: '',
+                    firstPageCoverage: '',
                     details: []
                 };
             }
@@ -48,6 +52,14 @@ class ReportGeneratorClient {
                 } else if (positionMatch.toLowerCase() === 'not match') {
                     queryGroups[query].notMatch++;
                 }
+            }
+            
+            // Capture first page tracking data (only set once per query)
+            if (firstPageCount && !queryGroups[query].firstPageCount) {
+                queryGroups[query].firstPageCount = firstPageCount;
+            }
+            if (firstPageCoverage && !queryGroups[query].firstPageCoverage) {
+                queryGroups[query].firstPageCoverage = firstPageCoverage;
             }
             
             queryGroups[query].details.push({
@@ -112,7 +124,12 @@ class ReportGeneratorClient {
             totalProducts: 0,
             totalMatches: 0,
             totalMismatches: 0,
-            averageAccuracy: 0
+            averageAccuracy: 0,
+            firstPageTracking: {
+                totalFound: 0,
+                totalExpected: 0,
+                averageCoverage: 0
+            }
         };
         
         Object.values(queryGroups).forEach(group => {
@@ -123,6 +140,21 @@ class ReportGeneratorClient {
         
         overallStats.averageAccuracy = overallStats.totalProducts > 0
             ? ((overallStats.totalMatches / overallStats.totalProducts) * 100).toFixed(2)
+            : 0;
+        
+        // Calculate first page tracking stats
+        Object.values(queryGroups).forEach(group => {
+            if (group.firstPageCount) {
+                const parts = group.firstPageCount.split('/');
+                if (parts.length === 2) {
+                    overallStats.firstPageTracking.totalFound += parseInt(parts[0]) || 0;
+                    overallStats.firstPageTracking.totalExpected += parseInt(parts[1]) || 0;
+                }
+            }
+        });
+        
+        overallStats.firstPageTracking.averageCoverage = overallStats.firstPageTracking.totalExpected > 0
+            ? ((overallStats.firstPageTracking.totalFound / overallStats.firstPageTracking.totalExpected) * 100).toFixed(2)
             : 0;
         
         // Generate HTML with client-side Chart.js
@@ -255,7 +287,7 @@ class ReportGeneratorClient {
         
         .query-stats {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
         }
         
@@ -458,6 +490,14 @@ class ReportGeneratorClient {
                 <div class="stat-value">${overallStats.averageAccuracy}%</div>
                 <div class="stat-label">Average Accuracy</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value">${overallStats.firstPageTracking.totalFound}/${overallStats.firstPageTracking.totalExpected}</div>
+                <div class="stat-label">First Page Found</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${overallStats.firstPageTracking.averageCoverage}%</div>
+                <div class="stat-label">First Page Coverage</div>
+            </div>
         </div>
         
         <!-- Summary Chart -->
@@ -549,6 +589,14 @@ class ReportGeneratorClient {
                             <div class="query-stat" data-category="notMatch" data-query-index="${index}">
                                 <div class="query-stat-value">${data.notMatch}</div>
                                 <div class="query-stat-label">Not Match</div>
+                            </div>
+                            <div class="query-stat" data-category="firstPageCount" data-query-index="${index}">
+                                <div class="query-stat-value">${data.firstPageCount || 'N/A'}</div>
+                                <div class="query-stat-label">First Page Count</div>
+                            </div>
+                            <div class="query-stat" data-category="firstPageCoverage" data-query-index="${index}">
+                                <div class="query-stat-value">${data.firstPageCoverage || 'N/A'}</div>
+                                <div class="query-stat-label">First Page Coverage</div>
                             </div>
                         </div>
                         
@@ -679,6 +727,43 @@ class ReportGeneratorClient {
                                     <td>${detail.expectedPos || 'N/A'}</td>
                                     <td>${detail.actualPos || 'N/A'}</td>
                                     <td class="status-not-match">${detail.status}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="product-list-firstPageCount-${index}" class="product-list">
+                    <h3>First Page Products (${data.firstPageCount || 'N/A'})</h3>
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th>Expected Product</th>
+                                <th>Expected SKU</th>
+                                <th>Actual Product</th>
+                                <th>Actual SKU</th>
+                                <th>Expected Position</th>
+                                <th>Actual Position</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.details.filter(detail => {
+                                if (!data.firstPageCount) return false;
+                                const parts = data.firstPageCount.split(' of ');
+                                if (parts.length !== 2) return false;
+                                const firstPageFound = parseInt(parts[0]) || 0;
+                                const actualPos = parseInt(detail.actualPos) || 0;
+                                return actualPos > 0 && actualPos <= firstPageFound;
+                            }).map(detail => `
+                                <tr>
+                                    <td>${detail.expectedName || 'N/A'}</td>
+                                    <td>${detail.expectedSku || 'N/A'}</td>
+                                    <td>${detail.actualName || 'N/A'}</td>
+                                    <td>${detail.actualSku || 'N/A'}</td>
+                                    <td>${detail.expectedPos || 'N/A'}</td>
+                                    <td>${detail.actualPos || 'N/A'}</td>
+                                    <td class="status-${detail.status.toLowerCase().replace(' ', '-')}">${detail.status}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
