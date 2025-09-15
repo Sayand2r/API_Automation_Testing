@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const csv = require('csv-parser');
+const ExcelJS = require('exceljs');
 const ReportGeneratorClient = require('../report-generator-client');
 
 // Helper function to add delay between API requests
@@ -444,6 +445,182 @@ function generateCSV(results) {
   return csvContent;
 }
 
+// Helper function to generate Excel file with multiple sheets
+async function generateExcelReport(results, outputPath) {
+  const workbook = new ExcelJS.Workbook();
+  
+  // Sheet 1: Query Summary
+  const summarySheet = workbook.addWorksheet('Query Summary');
+  
+  // Add summary headers
+  const summaryHeaders = [
+    'Query',
+    'Total Expected Products',
+    'Position Matches',
+    'Position Mismatches', 
+    'Not Found',
+    'Match Rate %',
+    'First Page Count',
+    'First Page Coverage %'
+  ];
+  
+  summarySheet.addRow(summaryHeaders);
+  
+  // Style the header row
+  const summaryHeaderRow = summarySheet.getRow(1);
+  summaryHeaderRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4472C4' } };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+  
+  // Add summary data
+  results.forEach(result => {
+    if (result.query && result.positionComparisons) {
+      // Count matches, mismatches, and not found
+      let matches = 0;
+      let mismatches = 0;
+      let notFound = 0;
+      
+      result.positionComparisons.forEach(comparison => {
+        if (comparison.match === 'Match') {
+          matches++;
+        } else if (comparison.match === 'Mismatch') {
+          mismatches++;
+        } else if (comparison.match === 'Not Match' || comparison.match === 'No Product at Position') {
+          notFound++;
+        }
+      });
+      
+      const totalExpected = result.positionComparisons.length;
+      const matchRate = totalExpected > 0 ? ((matches / totalExpected) * 100).toFixed(1) : '0.0';
+      
+      const row = [
+        result.query,
+        totalExpected,
+        matches,
+        mismatches,
+        notFound,
+        `${matchRate}%`,
+        result.firstPageTracking ? `${result.firstPageTracking.foundOnFirstPage} of ${result.firstPageTracking.totalExpected}` : 'N/A',
+        result.firstPageTracking && result.firstPageTracking.totalExpected > 0 ? `${((result.firstPageTracking.foundOnFirstPage / result.firstPageTracking.totalExpected) * 100).toFixed(1)}%` : 'N/A'
+      ];
+      
+      summarySheet.addRow(row);
+    }
+  });
+  
+  // Auto-fit columns for summary sheet
+  summarySheet.columns.forEach((column, index) => {
+    let maxLength = summaryHeaders[index].length;
+    column.eachCell({ includeEmpty: false }, (cell) => {
+      const columnLength = cell.value ? cell.value.toString().length : 0;
+      if (columnLength > maxLength) {
+        maxLength = columnLength;
+      }
+    });
+    column.width = Math.min(Math.max(maxLength + 2, 12), 50);
+  });
+  
+  // Sheet 2: Position Comparison (Detailed Data)
+  const detailSheet = workbook.addWorksheet('Position Comparison');
+  
+  // Add detail headers
+  const detailHeaders = [
+    'Input Query',
+    'Input Expected Name',
+    'Actual Product Name',
+    'Input Expected SKU',
+    'Actual SKU',
+    'Input Expected Position',
+    'Actual Position',
+    'Position Match',
+    'First Page Count',
+    'First Page Coverage %'
+  ];
+  
+  detailSheet.addRow(detailHeaders);
+  
+  // Style the header row
+  const detailHeaderRow = detailSheet.getRow(1);
+  detailHeaderRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '70AD47' } };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+  
+  // Add detailed data
+  results.forEach((r, resultIndex) => {
+    if (r.allPositions && r.allPositions.length > 0) {
+      r.allPositions.forEach(positionData => {
+        // Calculate actual position and position match for expected products
+        let actualPosition = '';
+        let positionMatch = '';
+        
+        if (positionData.expectedSku && r.actualProducts) {
+          const actualIndex = r.actualProducts.findIndex(p => p.sku === positionData.expectedSku);
+          if (actualIndex !== -1) {
+            actualPosition = actualIndex + 1;
+            positionMatch = actualPosition === positionData.position ? 'Match' : 'Mismatch';
+          } else {
+            actualPosition = 'No Record Found For Expected SKU :- ' + positionData.expectedSku;
+            positionMatch = 'Not Match';
+          }
+        }
+        
+        const row = [
+          r.query || '',
+          positionData.expectedName || '',
+          positionData.actualName || 'No Product',
+          positionData.expectedSku || '',
+          positionData.actualSku || 'N/A',
+          positionData.expectedPosition || positionData.position,
+          actualPosition,
+          positionMatch,
+          r.firstPageTracking ? `${r.firstPageTracking.foundOnFirstPage} of ${r.firstPageTracking.totalExpected}` : 'N/A',
+          r.firstPageTracking && r.firstPageTracking.totalExpected > 0 ? `${((r.firstPageTracking.foundOnFirstPage / r.firstPageTracking.totalExpected)*100).toFixed(1)}%` : 'N/A'
+        ];
+        
+        const addedRow = detailSheet.addRow(row);
+        
+        // Color code the position match column
+        const matchCell = addedRow.getCell(8); // Position Match column
+        if (positionMatch === 'Match') {
+          matchCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'C6EFCE' } };
+          matchCell.font = { color: { argb: '006100' } };
+        } else if (positionMatch === 'Mismatch') {
+          matchCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC7CE' } };
+          matchCell.font = { color: { argb: '9C0006' } };
+        } else {
+          matchCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEB9C' } };
+          matchCell.font = { color: { argb: '9C5700' } };
+        }
+      });
+      
+      // Add blank row between queries
+      if (resultIndex < results.length - 1) {
+        detailSheet.addRow([]);
+      }
+    }
+  });
+  
+  // Auto-fit columns for detail sheet
+  detailSheet.columns.forEach((column, index) => {
+    let maxLength = detailHeaders[index].length;
+    column.eachCell({ includeEmpty: false }, (cell) => {
+      const columnLength = cell.value ? cell.value.toString().length : 0;
+      if (columnLength > maxLength) {
+        maxLength = columnLength;
+      }
+    });
+    column.width = Math.min(Math.max(maxLength + 2, 12), 60);
+  });
+  
+  // Save the workbook
+  await workbook.xlsx.writeFile(outputPath);
+  return outputPath;
+}
+
 test.describe('API Testing - Complete Validation Suite', () => {
   test('Complete API testing with CSV input and comprehensive validation', async ({ request }) => {
     test.setTimeout(60000000); // 60 minute timeout for large datasets
@@ -560,6 +737,7 @@ test.describe('API Testing - Complete Validation Suite', () => {
           // Count expected products found on first page
           result.firstPageTracking = countExpectedProductsOnFirstPage(testCase.expectedProducts, products);
           
+          
           // COMPLETE PRODUCT LISTING - Show all products at every position
           console.log(`\n📋 Complete Product Listing (All ${products.length} products from ${result.pagesSearched} page(s)):`);
           console.log(`${'Page'.padEnd(4)} | ${'Pos'.padEnd(4)} | ${'Product Name'.padEnd(55)} | ${'SKU'.padEnd(15)} | Expected?`);
@@ -612,7 +790,7 @@ test.describe('API Testing - Complete Validation Suite', () => {
                 status = 'Exact Match';
                 exactMatches++;
               } else {
-                comparison.match = 'Not Match';
+                comparison.match = 'Mismatch';
                 matchStatus = `❌ MISMATCH (Expected: ${expectedAtThisPosition.expectedName} | SKU: ${expectedAtThisPosition.expectedSku})`;
                 status = 'Position Mismatch';
               }
@@ -773,6 +951,7 @@ test.describe('API Testing - Complete Validation Suite', () => {
     const totalMatches = testResults.reduce((total, result) => 
       total + (result.positionComparisons?.filter(comp => comp.match === 'Match').length || 0), 0);
     
+    
     console.log(`📊 Query Execution Summary:`);
     console.log(`  📋 Total Queries Processed: ${testResults.length}`);
     console.log(`  ✅ Successful Queries: ${successfulQueries.length}`);
@@ -803,21 +982,27 @@ test.describe('API Testing - Complete Validation Suite', () => {
       console.log(`\n💡 Note: Failed queries are included in the CSV report for complete documentation.`);
     }
     
-    // SAVE RESULTS TO CSV FILE
+    // SAVE RESULTS TO EXCEL FILE
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
     const timeString = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
     
-    // Save CSV output
+    // Generate Excel file with multiple sheets
+    const outputExcelPath = `./Output Reports/API_TEST_RESULTS_${timestamp}_${timeString}.xlsx`;
+    await generateExcelReport(testResults, outputExcelPath);
+    
+    // Also generate CSV for backward compatibility (HTML report still needs it)
     const outputCsvPath = `./Output Reports/POSITION_COMPARISON_${timestamp}_${timeString}.csv`;
     const csvContent = generateCSV(testResults);
     fs.writeFileSync(outputCsvPath, csvContent);
+    
     console.log(`\n💾 Results Saved:`);
-    console.log(`  📋 Position Comparison Report: ${outputCsvPath}`);
+    console.log(`  📊 Excel Report (2 sheets): ${outputExcelPath}`);
+    console.log(`  📋 CSV Report (for HTML): ${outputCsvPath}`);
     
     // Generate HTML report with charts
     try {
       const reportGenerator = new ReportGeneratorClient();
-      const htmlReportPath = await reportGenerator.generateHTMLReport(csvContent, './Output Reports');
+      const htmlReportPath = await reportGenerator.generateHTMLReport(csvContent, './Output Reports', testResults);
       console.log(`  📊 HTML Report with Charts: ${htmlReportPath}`);
     } catch (error) {
       console.log(`  ⚠️ Could not generate HTML report: ${error.message}`);

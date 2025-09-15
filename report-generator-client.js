@@ -111,12 +111,14 @@ class ReportGeneratorClient {
         return result;
     }
 
+
     /**
      * Generate HTML report with client-side Chart.js
      */
-    async generateHTMLReport(csvContent, outputPath) {
+    async generateHTMLReport(csvContent, outputPath, testResults = []) {
         const queryGroups = this.parseCSVData(csvContent);
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        
         
         // Calculate overall statistics
         const overallStats = {
@@ -141,6 +143,7 @@ class ReportGeneratorClient {
         overallStats.averageAccuracy = overallStats.totalProducts > 0
             ? ((overallStats.totalMatches / overallStats.totalProducts) * 100).toFixed(2)
             : 0;
+        
         
         // Calculate first page tracking stats
         Object.values(queryGroups).forEach(group => {
@@ -437,6 +440,26 @@ class ReportGeneratorClient {
         .query-hidden {
             display: none !important;
         }
+        
+        .relevance-perfect {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .relevance-near {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+        
+        .relevance-fair {
+            background: linear-gradient(135deg, #fd7e14, #e83e8c);
+        }
+        
+        .relevance-far {
+            background: linear-gradient(135deg, #dc3545, #6f42c1);
+        }
+        
+        .relevance-none {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
 
         @media (max-width: 768px) {
             .query-content {
@@ -501,10 +524,12 @@ class ReportGeneratorClient {
         </div>
         
         <!-- Summary Chart -->
-        <div class="summary-chart">
-            <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Overall Performance</h2>
-            <div style="position: relative; height: 400px;">
-                <canvas id="summaryChart"></canvas>
+        <div style="padding: 30px;">
+            <div class="summary-chart">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Accuracy Performance</h2>
+                <div style="position: relative; height: 400px;">
+                    <canvas id="summaryChart"></canvas>
+                </div>
             </div>
         </div>
         
@@ -568,7 +593,9 @@ class ReportGeneratorClient {
             <div class="query-section" data-accuracy="${data.accuracy}">
                 <div class="query-header">
                     <h2 class="query-title">Query: "${query}"</h2>
-                    <div class="accuracy-badge ${accuracyClass}">${data.accuracy}% Accuracy</div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="accuracy-badge ${accuracyClass}">${data.accuracy}% Accuracy</div>
+                    </div>
                 </div>
                 
                 <div class="query-content">
@@ -599,6 +626,7 @@ class ReportGeneratorClient {
                                 <div class="query-stat-label">First Page Coverage</div>
                             </div>
                         </div>
+                        
                         
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${data.accuracy}%">
@@ -769,6 +797,7 @@ class ReportGeneratorClient {
                         </tbody>
                     </table>
                 </div>
+                
             </div>
             `;
         }).join('')}
@@ -832,6 +861,7 @@ class ReportGeneratorClient {
                 }
             }
         });
+        
         
         // Create individual charts
         Object.values(queryData).forEach((data, index) => {
