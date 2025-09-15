@@ -148,11 +148,26 @@ class ReportGeneratorClient {
         // Calculate first page tracking stats
         Object.values(queryGroups).forEach(group => {
             if (group.firstPageCount) {
-                const parts = group.firstPageCount.split('/');
-                if (parts.length === 2) {
-                    overallStats.firstPageTracking.totalFound += parseInt(parts[0]) || 0;
-                    overallStats.firstPageTracking.totalExpected += parseInt(parts[1]) || 0;
+                // Handle different formats: "8/8", "8 of 8", "24 of 100", etc.
+                const cleanCount = group.firstPageCount.replace(/\s+/g, ' ');
+                let parts = cleanCount.split('/');
+                if (parts.length !== 2) {
+                    parts = cleanCount.split(' of ');
                 }
+                
+                if (parts.length === 2) {
+                    // For counting, use matches/totalExpected to ensure we count input products only
+                    overallStats.firstPageTracking.totalFound += group.matches;
+                    overallStats.firstPageTracking.totalExpected += group.totalExpected;
+                } else {
+                    // Fallback to using matches/totalExpected
+                    overallStats.firstPageTracking.totalFound += group.matches;
+                    overallStats.firstPageTracking.totalExpected += group.totalExpected;
+                }
+            } else {
+                // Fallback when no firstPageCount available
+                overallStats.firstPageTracking.totalFound += group.matches;
+                overallStats.firstPageTracking.totalExpected += group.totalExpected;
             }
         });
         
@@ -1120,6 +1135,84 @@ class ReportGeneratorClient {
         fs.writeFileSync(htmlPath, html);
         
         return htmlPath;
+    }
+
+    /**
+     * Check product presence from input list
+     * @param {Array} inputProducts - Array of products to check (with name, sku properties)  
+     * @param {string} csvContent - CSV content from position comparison
+     * @returns {Object} - Simple report showing which products are present/missing
+     */
+    checkProductPresence(inputProducts, csvContent) {
+        if (!inputProducts || !Array.isArray(inputProducts) || inputProducts.length === 0) {
+            throw new Error('Input products array is required and must not be empty');
+        }
+
+        if (!csvContent || typeof csvContent !== 'string') {
+            throw new Error('CSV content is required');
+        }
+
+        // Parse CSV data to get all actual products found
+        const queryGroups = this.parseCSVData(csvContent);
+        const allActualProducts = [];
+        
+        // Collect all actual products from all queries
+        Object.values(queryGroups).forEach(group => {
+            group.details.forEach(detail => {
+                if (detail.actualName && detail.actualSku && detail.actualName !== 'No Product') {
+                    allActualProducts.push({
+                        name: detail.actualName,
+                        sku: detail.actualSku
+                    });
+                }
+            });
+        });
+
+        // Remove duplicates based on SKU
+        const uniqueActualProducts = [];
+        const seenSkus = new Set();
+        allActualProducts.forEach(product => {
+            if (product.sku && !seenSkus.has(product.sku.toLowerCase())) {
+                seenSkus.add(product.sku.toLowerCase());
+                uniqueActualProducts.push(product);
+            }
+        });
+
+        let foundCount = 0;
+        let missingCount = 0;
+
+        // Check each input product
+        inputProducts.forEach(inputProduct => {
+            const inputSku = inputProduct.sku ? inputProduct.sku.toLowerCase().trim() : null;
+            
+            if (!inputSku) {
+                missingCount++;
+                return;
+            }
+
+            // Try to find by SKU
+            const foundProduct = uniqueActualProducts.find(actual => 
+                actual.sku && actual.sku.toLowerCase().trim() === inputSku
+            );
+
+            if (foundProduct) {
+                foundCount++;
+            } else {
+                missingCount++;
+            }
+        });
+
+        const foundPercentage = inputProducts.length > 0 
+            ? ((foundCount / inputProducts.length) * 100).toFixed(2)
+            : 0;
+
+        return {
+            totalInputProducts: inputProducts.length,
+            totalFound: foundCount,
+            totalMissing: missingCount,
+            foundPercentage: foundPercentage,
+            message: `Found ${foundCount} out of ${inputProducts.length} products (${foundPercentage}%)`
+        };
     }
 }
 

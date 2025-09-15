@@ -300,26 +300,43 @@ function countExpectedProductsOnFirstPage(expectedProducts, actualProducts) {
   const foundProducts = [];
   let foundCount = 0;
   
-  expectedProducts.forEach(expected => {
-    // Check if this expected product exists on first page by SKU match
-    const foundOnFirstPage = firstPageProducts.find(actual => 
-      actual.sku && expected.expectedSku && 
-      actual.sku.toLowerCase() === expected.expectedSku.toLowerCase()
-    );
+  // DEBUG: Log the first few products for debugging
+  console.log(`\n🔍 DEBUG: First Page Count Check`);
+  console.log(`Expected products count: ${expectedProducts.length}`);
+  console.log(`First page products count: ${firstPageProducts.length}`);
+  console.log(`Sample expected SKUs: ${expectedProducts.slice(0, 3).map(p => p.expectedSku).join(', ')}`);
+  console.log(`Sample first page SKUs: ${firstPageProducts.slice(0, 3).map(p => p.sku).join(', ')}`);
+  
+  expectedProducts.forEach((expected, index) => {
+    // Only count products that are SUPPOSED to be on first page (position 1-24)
+    const expectedPosition = parseInt(expected.expectedPosition) || (index + 1);
     
-    if (foundOnFirstPage) {
-      foundCount++;
-      foundProducts.push({
-        expectedName: expected.expectedName,
-        expectedSku: expected.expectedSku,
-        actualPosition: firstPageProducts.indexOf(foundOnFirstPage) + 1
-      });
+    // If this expected product should be on first page (position 1-24)
+    if (expectedPosition <= 24) {
+      // Check if this SPECIFIC expected product exists on first page by EXACT SKU match
+      const foundOnFirstPage = firstPageProducts.find(actual => 
+        actual.sku && expected.expectedSku && 
+        actual.sku.toLowerCase().trim() === expected.expectedSku.toLowerCase().trim()
+      );
+      
+      if (foundOnFirstPage) {
+        foundCount++;
+        foundProducts.push({
+          expectedName: expected.expectedName,
+          expectedSku: expected.expectedSku,
+          actualPosition: firstPageProducts.indexOf(foundOnFirstPage) + 1
+        });
+      }
     }
+    // If expected product is supposed to be on page 2+ (position 25+), don't count it for first page
   });
+  
+  console.log(`🎯 Final first page count: ${foundCount}/${expectedProducts.length}`);
   
   return {
     foundOnFirstPage: foundCount,
     totalExpected: expectedProducts.length,
+    firstPageSize: Math.min(24, actualProducts.length),
     foundProducts: foundProducts
   };
 }
@@ -429,8 +446,8 @@ function generateCSV(results) {
           `"${positionData.expectedPosition || positionData.position}"`,
           `"${actualPosition}"`,
           `"${positionMatch}"`,
-          `"${r.firstPageTracking ? `${r.firstPageTracking.foundOnFirstPage} of ${r.firstPageTracking.totalExpected}` : 'N/A'}"`,
-          `"${r.firstPageTracking && r.firstPageTracking.totalExpected > 0 ? ((r.firstPageTracking.foundOnFirstPage / r.firstPageTracking.totalExpected) * 100).toFixed(1) + '%' : 'N/A'}"`
+          `"${r.firstPageTracking ? `${r.firstPageTracking.foundOnFirstPage} of ${r.firstPageTracking.firstPageSize}` : 'N/A'}"`,
+          `"${r.firstPageTracking && r.firstPageTracking.firstPageSize > 0 ? ((r.firstPageTracking.foundOnFirstPage / r.firstPageTracking.firstPageSize) * 100).toFixed(1) + '%' : 'N/A'}"`
         ];
         csvContent += row.join(',') + '\n';
       });
@@ -502,8 +519,8 @@ async function generateExcelReport(results, outputPath) {
         mismatches,
         notFound,
         `${matchRate}%`,
-        result.firstPageTracking ? `${result.firstPageTracking.foundOnFirstPage} of ${result.firstPageTracking.totalExpected}` : 'N/A',
-        result.firstPageTracking && result.firstPageTracking.totalExpected > 0 ? `${((result.firstPageTracking.foundOnFirstPage / result.firstPageTracking.totalExpected) * 100).toFixed(1)}%` : 'N/A'
+        result.firstPageTracking ? `${result.firstPageTracking.foundOnFirstPage} of ${result.firstPageTracking.firstPageSize}` : 'N/A',
+        result.firstPageTracking && result.firstPageTracking.firstPageSize > 0 ? `${((result.firstPageTracking.foundOnFirstPage / result.firstPageTracking.firstPageSize) * 100).toFixed(1)}%` : 'N/A'
       ];
       
       summarySheet.addRow(row);
@@ -577,8 +594,8 @@ async function generateExcelReport(results, outputPath) {
           positionData.expectedPosition || positionData.position,
           actualPosition,
           positionMatch,
-          r.firstPageTracking ? `${r.firstPageTracking.foundOnFirstPage} of ${r.firstPageTracking.totalExpected}` : 'N/A',
-          r.firstPageTracking && r.firstPageTracking.totalExpected > 0 ? `${((r.firstPageTracking.foundOnFirstPage / r.firstPageTracking.totalExpected)*100).toFixed(1)}%` : 'N/A'
+          r.firstPageTracking ? `${r.firstPageTracking.foundOnFirstPage} of ${r.firstPageTracking.firstPageSize}` : 'N/A',
+          r.firstPageTracking && r.firstPageTracking.firstPageSize > 0 ? `${((r.firstPageTracking.foundOnFirstPage / r.firstPageTracking.firstPageSize)*100).toFixed(1)}%` : 'N/A'
         ];
         
         const addedRow = detailSheet.addRow(row);
@@ -790,9 +807,21 @@ test.describe('API Testing - Complete Validation Suite', () => {
                 status = 'Exact Match';
                 exactMatches++;
               } else {
-                comparison.match = 'Mismatch';
-                matchStatus = `❌ MISMATCH (Expected: ${expectedAtThisPosition.expectedName} | SKU: ${expectedAtThisPosition.expectedSku})`;
-                status = 'Position Mismatch';
+                // Check if this expected product exists ANYWHERE in the API response
+                const productExistsElsewhere = products.some(p => 
+                  p.sku && expectedAtThisPosition.expectedSku && 
+                  p.sku.toLowerCase().trim() === expectedAtThisPosition.expectedSku.toLowerCase().trim()
+                );
+                
+                if (productExistsElsewhere) {
+                  comparison.match = 'Mismatch';
+                  matchStatus = `❌ MISMATCH (Expected: ${expectedAtThisPosition.expectedName} | SKU: ${expectedAtThisPosition.expectedSku}) - Found elsewhere`;
+                  status = 'Position Mismatch';
+                } else {
+                  comparison.match = 'Not Match';
+                  matchStatus = `❌ NOT FOUND (Expected: ${expectedAtThisPosition.expectedName} | SKU: ${expectedAtThisPosition.expectedSku})`;
+                  status = 'Product Not Found';
+                }
               }
               
               result.positionComparisons.push(comparison);
@@ -870,9 +899,9 @@ test.describe('API Testing - Complete Validation Suite', () => {
           // Display first page tracking results
           if (result.firstPageTracking) {
             console.log(`\n📄 First Page Tracking (First 24 products):`);
-            console.log(`Found: ${result.firstPageTracking.foundOnFirstPage}/${result.firstPageTracking.totalExpected} expected products`);
-            if (result.firstPageTracking.totalExpected > 0) {
-              const coverage = ((result.firstPageTracking.foundOnFirstPage / result.firstPageTracking.totalExpected) * 100).toFixed(1);
+            console.log(`Found: ${result.firstPageTracking.foundOnFirstPage}/${result.firstPageTracking.firstPageSize} products on first page`);
+            if (result.firstPageTracking.firstPageSize > 0) {
+              const coverage = ((result.firstPageTracking.foundOnFirstPage / result.firstPageTracking.firstPageSize) * 100).toFixed(1);
               console.log(`Coverage: ${coverage}%`);
             }
             
@@ -1006,6 +1035,125 @@ test.describe('API Testing - Complete Validation Suite', () => {
       console.log(`  📊 HTML Report with Charts: ${htmlReportPath}`);
     } catch (error) {
       console.log(`  ⚠️ Could not generate HTML report: ${error.message}`);
+    }
+    
+    // Add Product Presence Check
+    try {
+      console.log(`\n🔍 Running Product Presence Check...`);
+      const reportGenerator = new ReportGeneratorClient();
+      
+      // Read input products from CSV
+      const inputProducts = [];
+      if (fs.existsSync('./API TEST INPUT.csv')) {
+        const inputContent = fs.readFileSync('./API TEST INPUT.csv', 'utf-8');
+        const lines = inputContent.split('\n').slice(1); // Skip header
+        
+        lines.forEach(line => {
+          if (line.trim()) {
+            const parts = line.split(',');
+            if (parts.length >= 3) {
+              const name = parts[1]?.replace(/"/g, '').trim();
+              const sku = parts[2]?.replace(/"/g, '').trim();
+              if (name && sku) {
+                inputProducts.push({ name, sku });
+              }
+            }
+          }
+        });
+        
+        // Remove duplicates
+        const uniqueProducts = [];
+        const seenSkus = new Set();
+        inputProducts.forEach(product => {
+          if (!seenSkus.has(product.sku.toLowerCase())) {
+            seenSkus.add(product.sku.toLowerCase());
+            uniqueProducts.push(product);
+          }
+        });
+        
+        if (uniqueProducts.length > 0) {
+          const presenceResult = reportGenerator.checkProductPresence(uniqueProducts, csvContent);
+          console.log(`  📊 ${presenceResult.message}`);
+          
+          // Calculate products found per query
+          const productsByQuery = {};
+          
+          // Group input products by query
+          testResults.forEach(result => {
+            if (result.query && result.expectedProducts && result.actualProducts) {
+              // Count how many input products are found ANYWHERE in API response (regardless of position)
+              let foundCount = 0;
+              
+              result.expectedProducts.forEach(expectedProduct => {
+                // Check if this expected product exists anywhere in the actual products by SKU
+                const isFound = result.actualProducts.some(actualProduct => 
+                  actualProduct.sku && expectedProduct.expectedSku && 
+                  actualProduct.sku.toLowerCase().trim() === expectedProduct.expectedSku.toLowerCase().trim()
+                );
+                
+                if (isFound) {
+                  foundCount++;
+                }
+              });
+              
+              const totalForQuery = result.expectedProducts.length;
+              
+              productsByQuery[result.query] = {
+                found: foundCount,
+                total: totalForQuery,
+                percentage: totalForQuery > 0 ? ((foundCount / totalForQuery) * 100).toFixed(1) : '0.0'
+              };
+            }
+          });
+          
+          // Add presence check columns to existing Excel sheets
+          const ExcelJS = require('exceljs');
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.readFile(outputExcelPath);
+          
+          // Update Query Summary sheet
+          const summarySheet = workbook.getWorksheet('Query Summary');
+          if (summarySheet) {
+            // Add new column header
+            const headerRow = summarySheet.getRow(1);
+            const newColIndex = headerRow.cellCount + 1;
+            headerRow.getCell(newColIndex).value = 'Input Products Found';
+            headerRow.getCell(newColIndex).font = { bold: true, color: { argb: 'FFFFFF' } };
+            headerRow.getCell(newColIndex).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4472C4' } };
+            headerRow.getCell(newColIndex).alignment = { horizontal: 'center', vertical: 'middle' };
+            
+            // Add data to each row
+            summarySheet.eachRow((row, rowNumber) => {
+              if (rowNumber > 1) { // Skip header
+                const queryName = row.getCell(1).value; // Query column
+                if (queryName && productsByQuery[queryName]) {
+                  const queryData = productsByQuery[queryName];
+                  row.getCell(newColIndex).value = `${queryData.found}/${queryData.total} (${queryData.percentage}%)`;
+                } else {
+                  row.getCell(newColIndex).value = 'N/A';
+                }
+              }
+            });
+            
+            // Auto-fit the new column
+            summarySheet.getColumn(newColIndex).width = 20;
+          }
+          
+          // Save updated Excel file
+          await workbook.xlsx.writeFile(outputExcelPath);
+          
+          // Add to CSV content
+          let presenceCSVContent = `\n\nProduct Presence by Query:\n`;
+          Object.entries(productsByQuery).forEach(([query, data]) => {
+            presenceCSVContent += `"${query}": ${data.found}/${data.total} products found (${data.percentage}%)\n`;
+          });
+          fs.appendFileSync(outputCsvPath, presenceCSVContent);
+          
+          console.log(`  ✅ Product Presence column added to existing Excel and CSV reports`);
+        }
+      }
+    } catch (error) {
+      console.log(`  ⚠️ Could not run product presence check: ${error.message}`);
     }
     
     console.log(`\n${'='.repeat(80)}`);
